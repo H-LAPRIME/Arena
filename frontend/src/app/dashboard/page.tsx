@@ -174,20 +174,24 @@ export default function DashboardPage() {
             </button>
           </form>
         </div>
+      </div>
 
-        {/* My Leagues */}
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title"><TrophyIcon /> My Leagues</span>
-          </div>
-          <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
-            {myLeagues.length > 0 ? myLeagues.map((lg: any) => (
-              <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", border: "1px solid var(--border)", borderRadius: "8px" }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>{lg.name}</div>
-                  <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>{lg.status}</div>
+      {/* My Leagues (Moved outside grid-2 for full width) */}
+      <div className="card" style={{ marginTop: "24px" }}>
+        <div className="card-header">
+          <span className="card-title"><TrophyIcon /> My Leagues</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {myLeagues.length > 0 ? myLeagues.map((lg: any) => (
+            <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", border: "1px solid var(--border)", borderRadius: "8px" }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: "16px" }}>{lg.name}</div>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
+                  Status: <span style={{ color: lg.status === "pending" ? "var(--gold)" : "var(--green)" }}>{lg.status.toUpperCase()}</span>
                 </div>
-                {lg.status === "pending" && lg.created_by !== user?.id && (
+              </div>
+              {lg.status === "pending" && (
+                lg.created_by !== user?.id ? (
                   <button 
                     className="btn btn-sm btn-secondary"
                     style={{ color: "var(--red)", borderColor: "rgba(255,59,48,0.2)" }}
@@ -203,14 +207,18 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    Quit
+                    Quit League
                   </button>
-                )}
-              </div>
-            )) : (
-              <p style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center" }}>You are not in any leagues yet.</p>
-            )}
-          </div>
+                ) : (
+                  <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "4px 8px", background: "var(--bg)", borderRadius: "4px" }}>
+                    Creator (Cannot quit)
+                  </span>
+                )
+              )}
+            </div>
+          )) : (
+            <p style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>You are not in any leagues yet.</p>
+          )}
         </div>
       </div>
 
