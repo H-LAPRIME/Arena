@@ -143,3 +143,51 @@ def delete_claim(
     db.delete(claim)
     db.commit()
     return {"message": "Claim deleted"}
+
+
+@router.patch("/{claim_id}/image", response_model=ClaimResponse)
+async def update_claim_image(
+    claim_id: str,
+    screenshot: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update the screenshot of a pending claim."""
+    claim = db.query(ResultClaim).filter(ResultClaim.id == claim_id, ResultClaim.claimant_id == current_user.id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    if claim.status != "pending":
+        raise HTTPException(status_code=400, detail="Cannot change image of a processed claim")
+
+    if not screenshot or not screenshot.filename:
+        raise HTTPException(status_code=400, detail="Screenshot is required")
+
+    ext = os.path.splitext(screenshot.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Screenshot must be JPG, PNG, GIF, or WebP")
+
+    content = await screenshot.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="Screenshot must be under 10 MB")
+
+    # Optional: try to delete old image
+    if claim.screenshot_url:
+        old_path = os.path.join(settings.UPLOAD_DIR, os.path.basename(claim.screenshot_url))
+        if os.path.exists(old_path):
+            try:
+                os.remove(old_path)
+            except Exception:
+                pass
+
+    upload_dir = settings.UPLOAD_DIR
+    os.makedirs(upload_dir, exist_ok=True)
+    filename = f"{current_user.id}_{claim.match_id}_upd_{int(datetime.utcnow().timestamp())}{ext}"
+    filepath = os.path.join(upload_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(content)
+    
+    claim.screenshot_url = f"/uploads/{filename}"
+    db.commit()
+    db.refresh(claim)
+    return _build_response(claim, db)

@@ -19,6 +19,7 @@ function ClaimsContent() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const updateFileRef = useRef<HTMLInputElement>(null);
   const touchTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Select Mode State
@@ -115,6 +116,28 @@ function ClaimsContent() {
     } else {
       setSelectedClaims([...selectedClaims, id]);
     }
+  }
+
+  async function handleImageUpdate(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (selectedClaims.length !== 1) {
+      alert("Please select exactly ONE claim to update its image.");
+      return;
+    }
+    const claimId = selectedClaims[0];
+    try {
+      setMsg("");
+      await claimsApi.updateImage(claimId, file);
+      setMsg("success:Image updated successfully!");
+      setIsSelectMode(false);
+      setSelectedClaims([]);
+      await loadData();
+    } catch (err: any) {
+      setMsg("error:" + err.message);
+    }
+    // reset input
+    if (updateFileRef.current) updateFileRef.current.value = "";
   }
 
   const msgType = msg.startsWith("success:") ? "success" : msg.startsWith("error:") ? "error" : "";
@@ -224,12 +247,25 @@ function ClaimsContent() {
               <>
                 <button 
                   className="btn btn-sm" 
-                  style={{ padding: "6px 10px", color: "var(--text-primary)", background: "var(--bg)", border: "1px solid var(--border)" }} 
-                  title="Install/Change Image" 
-                  onClick={() => alert("To change the image, please delete the claim and create a new one.")}
+                  style={{ padding: "6px 10px", color: "var(--text-primary)", background: "var(--bg)", border: "1px solid var(--border)", opacity: selectedClaims.length !== 1 ? 0.5 : 1 }} 
+                  title={selectedClaims.length === 1 ? "Change Image" : "Select exactly 1 claim to change its image"} 
+                  onClick={() => {
+                    if (selectedClaims.length === 1) {
+                      updateFileRef.current?.click();
+                    } else {
+                      alert("Veuillez sélectionner exactement UNE requête pour modifier son image.");
+                    }
+                  }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>
+                <input 
+                  type="file" 
+                  ref={updateFileRef} 
+                  style={{ display: "none" }} 
+                  accept="image/*" 
+                  onChange={handleImageUpdate} 
+                />
                 <button 
                   className="btn btn-sm btn-danger" 
                   style={{ padding: "6px 10px" }} 

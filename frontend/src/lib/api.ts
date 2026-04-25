@@ -112,6 +112,11 @@ export const claimsApi = {
   reject: (id: string, admin_note?: string) =>
     apiFetch(`/api/admin/claims/${id}/reject`, { method: "PUT", body: JSON.stringify({ status: "rejected", admin_note }) }),
   delete: (id: string) => apiFetch(`/api/claims/${id}`, { method: "DELETE" }),
+  updateImage: (id: string, screenshot: File) => {
+    const form = new FormData();
+    form.append("screenshot", screenshot);
+    return apiFetch(`/api/claims/${id}/image`, { method: "PATCH", body: form });
+  },
 };
 
 // Stats
