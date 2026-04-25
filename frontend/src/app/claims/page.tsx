@@ -209,18 +209,46 @@ function ClaimsContent() {
       {/* My Claims History */}
       <div className="card">
         <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <div>
-            <span className="card-title">My Claims</span>
-            <span className="badge" style={{ marginLeft: "8px" }}>{myClaims.length} total</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {isSelectMode ? (
+              <span className="card-title" style={{ color: "var(--accent)" }}>{selectedClaims.length} Selected</span>
+            ) : (
+              <>
+                <span className="card-title">My Claims</span>
+                <span className="badge" style={{ marginLeft: "8px" }}>{myClaims.length} total</span>
+              </>
+            )}
           </div>
-          {myClaims.length > 0 && (
-            <button 
-              className="btn btn-sm btn-secondary"
-              onClick={() => { setIsSelectMode(!isSelectMode); setSelectedClaims([]); }}
-            >
-              {isSelectMode ? "Cancel" : "Modify"}
-            </button>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {isSelectMode && selectedClaims.length > 0 && (
+              <>
+                <button 
+                  className="btn btn-sm" 
+                  style={{ padding: "6px 10px", color: "var(--text-primary)", background: "var(--bg)", border: "1px solid var(--border)" }} 
+                  title="Install/Change Image" 
+                  onClick={() => alert("To change the image, please delete the claim and create a new one.")}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button 
+                  className="btn btn-sm btn-danger" 
+                  style={{ padding: "6px 10px" }} 
+                  title="Delete Selected" 
+                  onClick={handleDeleteSelected}
+                >
+                  <TrashIcon />
+                </button>
+              </>
+            )}
+            {myClaims.length > 0 && (
+              <button 
+                className={isSelectMode ? "btn btn-sm" : "btn btn-sm btn-secondary"}
+                onClick={() => { setIsSelectMode(!isSelectMode); setSelectedClaims([]); }}
+              >
+                {isSelectMode ? "Cancel" : "Modify"}
+              </button>
+            )}
+          </div>
         </div>
         {myClaims.length === 0 ? (
           <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px", fontSize: "14px" }}>No claims submitted</p>
@@ -274,13 +302,6 @@ function ClaimsContent() {
                 </div>
               </div>
             ))}
-            {isSelectMode && selectedClaims.length > 0 && (
-              <div style={{ marginTop: "12px", display: "flex", gap: "12px" }}>
-                <button onClick={handleDeleteSelected} className="btn btn-danger" style={{ flex: 1 }}>
-                  <TrashIcon /> Delete Selected ({selectedClaims.length})
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
