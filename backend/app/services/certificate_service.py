@@ -133,7 +133,9 @@ class CertificateService:
         pdf.ln(5)
         
         pdf.set_font("Arial", 'I', 12)
-        pdf.multi_cell(0, 8, ai_msg)
+        # Sanitize text for latin-1 compatibility
+        sanitized_msg = ai_msg.replace('—', '-').replace('’', "'").replace('“', '"').replace('”', '"')
+        pdf.multi_cell(0, 8, sanitized_msg)
         
         pdf.ln(10)
         pdf.set_font("Arial", 'B', 16)
