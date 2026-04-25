@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { statsApi, usersApi, leaguesApi } from "@/lib/api";
+import { statsApi, usersApi, leaguesApi, certificatesApi } from "@/lib/api";
 import Link from "next/link";
 import { ChartIcon, TrophyIcon, ShieldIcon, GamepadIcon, SettingsIcon } from "@/components/Icons";
 import Cropper from "react-easy-crop";
@@ -273,6 +273,71 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Certificates Section */}
+      <div style={{ marginTop: "40px" }}>
+        <h2 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <TrophyIcon /> My Achievements & Certificates
+        </h2>
+        
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+          {user.is_lord && (
+            <div className="card" style={{ border: "1px solid var(--gold)", background: "rgba(212, 175, 55, 0.05)", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
+              <div style={{ padding: "24px" }}>
+                <div style={{ fontSize: "12px", color: "var(--gold)", fontWeight: 700, textTransform: "uppercase", marginBottom: "8px", letterSpacing: "1px" }}>Legendary Rank</div>
+                <h3 style={{ fontSize: "22px", fontWeight: 800, marginBottom: "12px" }}>Lord of the Arena</h3>
+                <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                  Granted for winning 3 prestigious League Titles. You are part of the elite.
+                </p>
+              </div>
+              <button 
+                onClick={() => certificatesApi.downloadLord()}
+                className="btn" 
+                style={{ width: "100%", background: "var(--gradient-gold)", color: "#000", fontWeight: 800, borderRadius: "0", padding: "14px" }}
+              >
+                Download Lord Certificate
+              </button>
+            </div>
+          )}
+
+          {myLeagues.map(l => {
+            const isChamp = l.champion_id === user.id;
+            if (!isChamp && l.status !== 'completed') return null;
+            
+            return (
+              <div key={l.id} className="card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
+                <div style={{ padding: "24px" }}>
+                  <div style={{ fontSize: "11px", color: isChamp ? "var(--gold)" : "var(--accent)", fontWeight: 700, textTransform: "uppercase", marginBottom: "8px", letterSpacing: "1px" }}>
+                    {isChamp ? "Champion Badge" : "Season Review"}
+                  </div>
+                  <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "12px" }}>{l.name}</h3>
+                  <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                    {isChamp ? "Congratulations on your title victory! Claim your official badge." : "Review your season statistics and personalized AI analysis."}
+                  </p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {isChamp && (
+                    <button 
+                      onClick={() => certificatesApi.downloadTitle(l.id, l.name)}
+                      className="btn" 
+                      style={{ width: "100%", borderRadius: "0", background: "var(--gradient-gold)", color: "#000", border: "none", fontWeight: 700, padding: "12px" }}
+                    >
+                      Download Champion Badge
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => certificatesApi.downloadReport(l.id, l.name, user.username)}
+                    className="btn btn-secondary" 
+                    style={{ width: "100%", borderRadius: "0", padding: "12px", borderTop: isChamp ? "1px solid rgba(255,255,255,0.1)" : "none" }}
+                  >
+                    Performance Report
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

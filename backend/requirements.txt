@@ -13,3 +13,5 @@ python-dotenv==1.0.1
 aiofiles==23.2.1
 slowapi==0.1.9
 email-validator==2.3.0
+Pillow>=10.0.0
+fpdf2>=2.7.0

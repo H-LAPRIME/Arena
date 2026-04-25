@@ -119,6 +119,32 @@ export const claimsApi = {
   },
 };
 
+// Certificates
+export const certificatesApi = {
+  downloadFile: async (endpoint: string, filename: string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("efootball_token") : null;
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      headers: token ? { "Authorization": `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error("Download failed");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  },
+  downloadTitle: (leagueId: string, leagueName: string) => 
+    certificatesApi.downloadFile(`/api/certificates/title/${leagueId}`, `Champion_${leagueName}.pdf`),
+  downloadLord: () => 
+    certificatesApi.downloadFile(`/api/certificates/lord`, `Lord_of_the_Arena.pdf`),
+  downloadReport: (leagueId: string, leagueName: string, username: string) => 
+    certificatesApi.downloadFile(`/api/certificates/report/${leagueId}`, `Report_${leagueName}_${username}.pdf`),
+};
+
 // Stats
 export const statsApi = {
   headToHead: (id1: string, id2: string) => apiFetch(`/api/stats/head-to-head/${id1}/${id2}`),

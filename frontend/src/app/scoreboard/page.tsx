@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { leaguesApi } from "@/lib/api";
+import { leaguesApi, certificatesApi } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { ChartIcon, TrophyIcon, ArrowRightIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 
@@ -10,6 +11,7 @@ export default function ScoreboardPage() {
   const [standings, setStandings] = useState<any[]>([]);
   const [league, setLeague] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [botMessage, setBotMessage] = useState("");
 
   useEffect(() => {
@@ -37,11 +39,22 @@ export default function ScoreboardPage() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title"><ChartIcon /> Standings</h1>
-        <p className="page-subtitle">
-          {league ? `${league.name} — ${league.status === "active" ? "Ongoing" : "Completed"}` : "No league"}
-        </p>
+      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "20px" }}>
+        <div>
+          <h1 className="page-title"><ChartIcon /> Standings</h1>
+          <p className="page-subtitle">
+            {league ? `${league.name} — ${league.status === "active" ? "Ongoing" : "Completed"}` : "No league"}
+          </p>
+        </div>
+        {league && (
+          <button 
+            onClick={() => certificatesApi.downloadReport(league.id, league.name, user?.username || "Player")}
+            className="btn btn-sm btn-secondary"
+            style={{ borderRadius: "var(--radius-full)", padding: "8px 16px" }}
+          >
+            <TrophyIcon /> Download My Season Report
+          </button>
+        )}
       </div>
 
       {standings.length > 0 ? (
