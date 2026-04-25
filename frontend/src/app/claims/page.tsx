@@ -19,6 +19,11 @@ function ClaimsContent() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const touchTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Select Mode State
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedClaims, setSelectedClaims] = useState<string[]>([]);
 
   useEffect(() => { loadData(); }, []);
 
@@ -70,18 +75,45 @@ function ClaimsContent() {
     setLoading(false);
   }
 
-  async function handleDelete(claimId: string, status: string) {
-    if (status === "approved" && !confirm("This claim has already been approved. Deleting it from your history won't change your points, but it will disappear from this list. Continue?")) {
-      return;
+  async function handleDeleteSelected() {
+    if (selectedClaims.length === 0) return;
+    if (!confirm(`Delete ${selectedClaims.length} selected claim(s)?`)) return;
+    
+    let errCount = 0;
+    for (const id of selectedClaims) {
+      try {
+        await claimsApi.delete(id);
+      } catch {
+        errCount++;
+      }
     }
-    if (status !== "approved" && !confirm("Delete this claim?")) {
-      return;
-    }
-    try {
-      await claimsApi.delete(claimId);
-      await loadData();
-    } catch (err: any) {
-      alert("Error: " + err.message);
+    setIsSelectMode(false);
+    setSelectedClaims([]);
+    await loadData();
+    if (errCount > 0) alert(`Completed with ${errCount} errors.`);
+    else setMsg(`success:Deleted ${selectedClaims.length} claim(s).`);
+  }
+
+  function handleTouchStart(id: string) {
+    if (isSelectMode) return;
+    touchTimer.current = setTimeout(() => {
+      setIsSelectMode(true);
+      setSelectedClaims([id]);
+      if (typeof window !== "undefined" && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    }, 600); // 600ms hold
+  }
+
+  function handleTouchEnd() {
+    if (touchTimer.current) clearTimeout(touchTimer.current);
+  }
+
+  function toggleSelection(id: string) {
+    if (selectedClaims.includes(id)) {
+      setSelectedClaims(selectedClaims.filter(x => x !== id));
+    } else {
+      setSelectedClaims([...selectedClaims, id]);
     }
   }
 
@@ -176,17 +208,53 @@ function ClaimsContent() {
 
       {/* My Claims History */}
       <div className="card">
-        <div className="card-header">
-          <span className="card-title">My Claims</span>
-          <span className="badge">{myClaims.length} total</span>
+        <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <div>
+            <span className="card-title">My Claims</span>
+            <span className="badge" style={{ marginLeft: "8px" }}>{myClaims.length} total</span>
+          </div>
+          {myClaims.length > 0 && (
+            <button 
+              className="btn btn-sm btn-secondary"
+              onClick={() => { setIsSelectMode(!isSelectMode); setSelectedClaims([]); }}
+            >
+              {isSelectMode ? "Cancel" : "Modify"}
+            </button>
+          )}
         </div>
         {myClaims.length === 0 ? (
           <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "32px", fontSize: "14px" }}>No claims submitted</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {myClaims.map((c: any) => (
-              <div key={c.id} className="claim-list-item">
+              <div 
+                key={c.id} 
+                className="claim-list-item"
+                style={{ 
+                  display: "flex", 
+                  gap: "12px", 
+                  alignItems: "center", 
+                  justifyContent: "space-between",
+                  padding: "12px", 
+                  border: "1px solid var(--border)", 
+                  borderRadius: "8px",
+                  cursor: isSelectMode ? "pointer" : "default",
+                  background: selectedClaims.includes(c.id) ? "var(--accent-pale)" : "transparent",
+                  transition: "background 0.2s"
+                }}
+                onClick={() => { if (isSelectMode) toggleSelection(c.id); }}
+                onTouchStart={() => handleTouchStart(c.id)}
+                onTouchEnd={handleTouchEnd}
+              >
                 <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                  {isSelectMode && (
+                    <input 
+                      type="checkbox" 
+                      checked={selectedClaims.includes(c.id)} 
+                      readOnly
+                      style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "var(--accent)" }}
+                    />
+                  )}
                   <span className={c.status === "pending" ? "claim-pending" : c.status === "approved" ? "claim-approved" : "claim-rejected"}>
                     {c.status.toUpperCase()}
                   </span>
@@ -199,16 +267,20 @@ function ClaimsContent() {
                 </div>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                   {c.screenshot_url && (
-                    <a href={`${API_URL}${c.screenshot_url}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`${API_URL}${c.screenshot_url}`} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (isSelectMode) e.preventDefault(); }}>
                       <img src={`${API_URL}${c.screenshot_url}`} alt="proof" style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }} />
                     </a>
                   )}
-                  <button onClick={() => handleDelete(c.id, c.status)} className="btn btn-sm btn-danger" style={{ padding: "6px" }} title="Delete">
-                    <TrashIcon />
-                  </button>
                 </div>
               </div>
             ))}
+            {isSelectMode && selectedClaims.length > 0 && (
+              <div style={{ marginTop: "12px", display: "flex", gap: "12px" }}>
+                <button onClick={handleDeleteSelected} className="btn btn-danger" style={{ flex: 1 }}>
+                  <TrashIcon /> Delete Selected ({selectedClaims.length})
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
