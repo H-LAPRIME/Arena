@@ -137,7 +137,7 @@ export default function ProfilePage() {
   if (!user) return <div className="page-container"><p>Please log in</p></div>;
 
   return (
-    <div className="page-container" style={{ maxWidth: "1200px" }}>
+    <div className="page-container" style={{ maxWidth: "1400px" }}>
       {/* 1. HERO SECTION: Profile Header */}
       <div className="card" style={{ padding: "40px", textAlign: "center", marginBottom: "32px", position: "relative", overflow: "hidden", borderRadius: "var(--radius-lg)" }}>
         <div style={{ 

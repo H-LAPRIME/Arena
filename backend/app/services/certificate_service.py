@@ -150,6 +150,6 @@ class CertificateService:
         for h in highlights:
             pdf.cell(0, 8, f"- {h}", ln=True)
 
-        return pdf.output()
+        return bytes(pdf.output())
 
 certificate_service = CertificateService()
