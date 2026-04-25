@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { claimsApi, leaguesApi, matchesApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -7,7 +7,7 @@ import { ShieldIcon, TrophyIcon, HandshakeIcon, CheckIcon, TrashIcon } from "@/c
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export default function ClaimsPage() {
+function ClaimsContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const matchIdFromUrl = searchParams.get("matchId");
@@ -216,3 +216,10 @@ export default function ClaimsPage() {
   );
 }
 
+export default function ClaimsPage() {
+  return (
+    <Suspense fallback={<div className="loading-spinner"><div className="spinner"></div></div>}>
+      <ClaimsContent />
+    </Suspense>
+  );
+}

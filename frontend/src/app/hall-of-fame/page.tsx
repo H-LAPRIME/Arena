@@ -1,14 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi } from "@/lib/api";
+import { usersApi, leaguesApi } from "@/lib/api";
 
 export default function HallOfFamePage() {
   const [players, setPlayers] = useState<any[]>([]);
+  const [completedLeagues, setCompletedLeagues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    usersApi.getAll()
-      .then((p) => { setPlayers(p); })
+    Promise.all([usersApi.getAll(), leaguesApi.getAll()])
+      .then(([p, l]) => { 
+        setPlayers(p); 
+        setCompletedLeagues(l.filter((league: any) => league.status === "completed"));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -81,22 +85,19 @@ export default function HallOfFamePage() {
       </div>
 
       {/* Season History */}
-      {seasons.length > 0 && (
+      {completedLeagues.length > 0 && (
         <div className="card">
-          <div className="card-header"><span className="card-title">📜 Historique des saisons</span></div>
+          <div className="card-header"><span className="card-title">📜 Historique des Ligues</span></div>
           <div className="match-list">
-            {seasons.map((s: any) => {
+            {completedLeagues.map((s: any) => {
               const champ = players.find((p: any) => p.id === s.champion_id);
               return (
                 <div key={s.id} className="match-card played">
-                  <span className="match-day-badge">SAISON {s.season_number}</span>
+                  <span className="match-day-badge">{s.name}</span>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ fontSize: "24px" }}>👑</span>
                     <span style={{ fontWeight: 700 }}>{champ?.username || "?"}</span>
                   </div>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                    {s.ended_at ? new Date(s.ended_at).toLocaleDateString("fr-FR") : ""}
-                  </span>
                 </div>
               );
             })}
