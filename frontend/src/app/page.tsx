@@ -130,6 +130,11 @@ export default function Home() {
           </div>
         )}
       </div>
+      <footer style={{ marginTop: "64px", padding: "40px 0", borderTop: "1px solid var(--border)", textAlign: "center" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "14px" }}>
+          &copy; {new Date().getFullYear()} eFootball Arena — Developed by <strong style={{ color: "var(--text-primary)" }}>Hida Mouad</strong>
+        </p>
+      </footer>
     </main>
   );
 }
