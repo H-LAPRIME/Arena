@@ -230,6 +230,10 @@ export default function AdminPage() {
       {/* Users Tab */}
       {tab === "users" && (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+            <span className="card-title">Players</span>
+            <button onClick={() => { setEditingUser({}); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
+          </div>
           <div className="table-container admin-table-container">
             <table className="admin-table">
               <thead>
@@ -256,6 +260,10 @@ export default function AdminPage() {
       {/* Matches Tab */}
       {tab === "matches" && (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+            <span className="card-title">Matches</span>
+            <button onClick={() => { setEditingMatch({}); setIsMatchModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Match</button>
+          </div>
           <div className="table-container admin-table-container">
             <table className="admin-table">
               <thead>
@@ -285,6 +293,10 @@ export default function AdminPage() {
       {/* Seasons Tab */}
       {tab === "seasons" && (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+            <span className="card-title">Seasons / Leagues</span>
+            <button onClick={() => { setEditingSeason({}); setIsSeasonModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Create League</button>
+          </div>
           <div className="table-container admin-table-container">
             <table className="admin-table">
               <thead>
