@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi, statsApi } from "@/lib/api";
+import { usersApi, statsApi, getAvatarUrl } from "@/lib/api";
 import { useParams } from "next/navigation";
 
 export default function PlayerDetailPage() {
@@ -24,8 +24,12 @@ export default function PlayerDetailPage() {
     <div className="page-container">
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
         <div className="player-avatar" style={{ width: "100px", height: "100px", fontSize: "40px", margin: "0 auto 16px",
-          background: player.is_lord ? "var(--gradient-gold)" : "var(--gradient-green)" }}>
-          {player.username[0].toUpperCase()}
+          background: player.is_lord ? "var(--gradient-gold)" : "var(--gradient-green)", overflow: "hidden" }}>
+          {player.avatar_url ? (
+            <img src={getAvatarUrl(player.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            player.username[0].toUpperCase()
+          )}
         </div>
         <h1 className="page-title">{player.username}</h1>
         {player.is_lord && <div className="lord-badge">🏆 LORD OF THE GAME</div>}
