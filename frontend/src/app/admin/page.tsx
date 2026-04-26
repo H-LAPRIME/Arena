@@ -40,7 +40,7 @@ export default function AdminPage() {
     try {
       const [c, u, m, s] = await Promise.all([
         claimsApi.getAll(statusFilter || undefined),
-        usersApi.getAll(),
+        usersApi.adminList(),
         matchesApi.getAll(),
         leaguesApi.getAll(),
       ]);

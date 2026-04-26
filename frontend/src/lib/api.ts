@@ -58,6 +58,7 @@ export const authApi = {
 // Users
 export const usersApi = {
   getAll: () => apiFetch("/api/users"),
+  adminList: () => apiFetch("/api/admin/users"),
   getOne: (id: string) => apiFetch(`/api/users/${id}`),
   update: (id: string, data: Record<string, any>) =>
     apiFetch(`/api/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
