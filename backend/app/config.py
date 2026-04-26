@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     # File uploads
     UPLOAD_DIR: str = "uploads"
 
+    # Supabase
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+
     class Config:
         env_file = ".env"
 
