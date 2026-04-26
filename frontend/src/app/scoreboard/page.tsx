@@ -63,12 +63,12 @@ export default function ScoreboardPage() {
             <table className="scoreboard">
               <thead>
                 <tr>
-                  <th>#</th><th>Player</th><th>MP</th><th>Rest</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>
+                  <th>#</th><th>Player</th><th>MP</th><th>STAY</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>
                 </tr>
               </thead>
               <tbody>
                 {standings.map((s: any, i: number) => {
-                  const totalMatches = (standings.length - 1) * 2;
+                  const totalMatches = ((league?.max_members || standings.length) - 1) * 4;
                   const restant = Math.max(0, totalMatches - s.played);
                   return (
                     <tr key={s.id}>

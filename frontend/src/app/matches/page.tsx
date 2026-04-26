@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { leaguesApi, matchesApi } from "@/lib/api";
+import { leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, HomeIcon, PlaneIcon, GamepadIcon, CheckIcon, ArrowRightIcon } from "@/components/Icons";
@@ -61,7 +61,7 @@ export default function MatchesPage() {
                 <div style={{ textAlign: "center", minWidth: "100px" }}>
                   <div className="player-avatar" style={{ margin: "0 auto 4px", width: "32px", height: "32px", fontSize: "14px", border: m.home_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden" }}>
                     {m.home_player_avatar ? (
-                      <img src={`${API_URL}${m.home_player_avatar}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={getAvatarUrl(m.home_player_avatar) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       (m.home_player_name || "?")[0].toUpperCase()
                     )}
@@ -81,7 +81,7 @@ export default function MatchesPage() {
                 <div style={{ textAlign: "center", minWidth: "100px" }}>
                   <div className="player-avatar" style={{ margin: "0 auto 4px", width: "32px", height: "32px", fontSize: "14px", background: "var(--gradient-green)", border: m.away_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden" }}>
                     {m.away_player_avatar ? (
-                      <img src={`${API_URL}${m.away_player_avatar}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={getAvatarUrl(m.away_player_avatar) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       (m.away_player_name || "?")[0].toUpperCase()
                     )}
