@@ -18,6 +18,8 @@ export default function DashboardPage() {
   const [msg, setMsg] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [botMessage, setBotMessage] = useState("");
+  const [viewingLeague, setViewingLeague] = useState<any>(null);
+  const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
   const { user } = useAuth();
 
   useEffect(() => { loadAll(); }, []);
@@ -59,6 +61,16 @@ export default function DashboardPage() {
       loadAll();
     } catch (err: any) {
       setMsg("error:" + err.message);
+    }
+  }
+
+  async function handleViewLeague(lg: any) {
+    setViewingLeague(lg);
+    try {
+      const members = await leaguesApi.getMembers(lg.id);
+      setLeagueMembers(members);
+    } catch (e) {
+      setLeagueMembers([]);
     }
   }
 
@@ -183,19 +195,23 @@ export default function DashboardPage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {myLeagues.length > 0 ? myLeagues.map((lg: any) => (
-            <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", border: "1px solid var(--border)", borderRadius: "8px" }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: "16px" }}>{lg.name}</div>
-                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
-                  Status: <span style={{ color: lg.status === "pending" ? "var(--gold)" : "var(--green)" }}>{lg.status.toUpperCase()}</span>
+            <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", border: "1px solid var(--border)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
+              <div style={{ flex: 1, cursor: "pointer" }} onClick={() => handleViewLeague(lg)}>
+                <div style={{ fontWeight: 600, fontSize: "16px", color: "var(--text-primary)" }}>{lg.name}</div>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", display: "flex", gap: "12px" }}>
+                  <span>Status: <span style={{ color: lg.status === "pending" ? "var(--gold)" : "var(--green)", fontWeight: 600 }}>{lg.status.toUpperCase()}</span></span>
+                  <span>•</span>
+                  <span>{lg.member_count} Players</span>
                 </div>
               </div>
-              {lg.status === "pending" && (
-                lg.created_by !== user?.id ? (
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button className="btn btn-sm" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={() => handleViewLeague(lg)}>Details</button>
+                {lg.status === "pending" && lg.created_by !== user?.id && (
                   <button 
                     className="btn btn-sm btn-secondary"
-                    style={{ color: "var(--red)", borderColor: "rgba(255,59,48,0.2)" }}
-                    onClick={async () => {
+                    style={{ color: "var(--red)", borderColor: "rgba(239, 68, 68, 0.2)", padding: "6px 12px", fontSize: "12px" }}
+                    onClick={async (e) => {
+                      e.stopPropagation();
                       if (confirm("Are you sure you want to quit this league?")) {
                         try {
                           await leaguesApi.quit(lg.id);
@@ -207,20 +223,67 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    Quit League
+                    Quit
                   </button>
-                ) : (
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)", padding: "4px 8px", background: "var(--bg)", borderRadius: "4px" }}>
-                    Creator (Cannot quit)
-                  </span>
-                )
-              )}
+                )}
+              </div>
             </div>
           )) : (
             <p style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>You are not in any leagues yet.</p>
           )}
         </div>
       </div>
+
+      {/* League Details Modal */}
+      {viewingLeague && (
+        <div className="modal-overlay" onClick={() => setViewingLeague(null)}>
+          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ width: "500px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ margin: 0, fontSize: "20px" }}>{viewingLeague.name}</h2>
+              <button onClick={() => setViewingLeague(null)} className="btn btn-sm" style={{ minWidth: "auto", padding: "4px 8px" }}>✕</button>
+            </div>
+
+            <div style={{ background: "rgba(255,255,255,0.02)", padding: "16px", borderRadius: "12px", border: "1px solid var(--border)", marginBottom: "20px" }}>
+              <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>JOIN CODE</div>
+              <div style={{ fontFamily: "monospace", fontSize: "24px", fontWeight: 700, color: "var(--accent-light)", letterSpacing: "2px" }}>{viewingLeague.join_code}</div>
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "8px" }}>{viewingLeague.description || "No description provided."}</p>
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                <span style={{ fontWeight: 600, fontSize: "14px" }}>Participants ({viewingLeague.member_count}/{viewingLeague.max_members})</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "300px", overflowY: "auto", paddingRight: "8px" }}>
+                {leagueMembers.map((m: any) => (
+                  <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "10px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+                    <div className="player-avatar" style={{ width: "36px", height: "36px", fontSize: "14px" }}>
+                      {m.avatar_url ? <img src={`${API_URL}${m.avatar_url}`} alt={m.username} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : m.username[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{ fontWeight: 600, fontSize: "14px" }}>{m.username}</span>
+                        {m.is_lord && <span title="Lord of the Game" style={{ color: "gold", fontSize: "12px" }}>👑</span>}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>Joined {new Date(m.joined_at).toLocaleDateString()}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(255, 215, 0, 0.1)", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(255, 215, 0, 0.2)" }}>
+                      <span style={{ color: "gold", fontSize: "12px" }}>🏆</span>
+                      <span style={{ fontWeight: 700, color: "gold", fontSize: "12px" }}>{m.total_trophies || 0}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                Platform: <span style={{ color: "var(--text-primary)" }}>{leagues.length} Seasons total</span>
+              </div>
+              <button onClick={() => setViewingLeague(null)} className="btn btn-primary btn-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Players List */}
       <div className="card" style={{ marginTop: "24px" }}>

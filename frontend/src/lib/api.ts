@@ -80,12 +80,12 @@ export const leaguesApi = {
   delete: (id: string) => apiFetch(`/api/admin/leagues/${id}`, { method: "DELETE" }),
   join: (join_code: string) => apiFetch("/api/leagues/join", { method: "POST", body: JSON.stringify({ join_code }) }),
   getMy: () => apiFetch("/api/leagues/my"),
+  getMembers: (id: string) => apiFetch(`/api/leagues/${id}/members`),
   getStandings: (id: string) => apiFetch(`/api/leagues/${id}/standings`),
   getMatches: (id: string) => apiFetch(`/api/leagues/${id}/matches`),
   getStandingAdvice: (id: string) => apiFetch(`/api/leagues/${id}/standing-advice`),
   getH2HAdvice: (id: string, opponentId: string) => apiFetch(`/api/leagues/${id}/h2h-advice/${opponentId}`),
   getMatchAdvice: (matchId: string) => apiFetch(`/api/leagues/match-advice/${matchId}`),
-  getMembers: (id: string) => apiFetch(`/api/admin/leagues/${id}/members`),
   quit: (id: string) => apiFetch(`/api/leagues/${id}/quit`, { method: "DELETE" }),
 };
 
