@@ -155,7 +155,11 @@ export default function ProfilePage() {
             position: "relative", cursor: "pointer", overflow: "hidden"
           }} onClick={() => document.getElementById("avatar-input")?.click()}>
             {user.avatar_url ? (
-              <img src={`${API_URL}${user.avatar_url}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img 
+                src={user.avatar_url.startsWith("http") ? user.avatar_url : `${API_URL}${user.avatar_url}`} 
+                alt="Avatar" 
+                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+              />
             ) : (
               user.username[0].toUpperCase()
             )}

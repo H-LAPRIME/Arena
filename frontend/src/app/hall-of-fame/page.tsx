@@ -71,8 +71,16 @@ export default function HallOfFamePage() {
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>
                 {i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}
               </div>
-              <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "22px", margin: "0 auto 8px" }}>
-                {p.username[0].toUpperCase()}
+              <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "22px", margin: "0 auto 8px", overflow: "hidden" }}>
+                {p.avatar_url ? (
+                  <img 
+                    src={p.avatar_url.startsWith("http") ? p.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${p.avatar_url}`} 
+                    alt="Avatar" 
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                  />
+                ) : (
+                  p.username[0].toUpperCase()
+                )}
               </div>
               <h3 style={{ fontWeight: 700, marginBottom: "4px" }}>{p.username}</h3>
               <div style={{ fontFamily: "var(--font-display)", fontSize: "24px", fontWeight: 900, color: "var(--gold-dark)" }}>

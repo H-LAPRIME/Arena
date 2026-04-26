@@ -86,7 +86,11 @@ export default function ScoreboardPage() {
                       <div className="player-cell">
                         <div className="player-avatar" style={{ overflow: "hidden" }}>
                           {s.avatar_url ? (
-                            <img src={`${API_URL}${s.avatar_url}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <img 
+                              src={s.avatar_url.startsWith("http") ? s.avatar_url : `${API_URL}${s.avatar_url}`} 
+                              alt="Avatar" 
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                            />
                           ) : (
                             (s.username || "?")[0].toUpperCase()
                           )}

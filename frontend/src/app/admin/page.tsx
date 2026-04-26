@@ -351,7 +351,13 @@ export default function AdminPage() {
               {editingUser?.id && (
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", padding: "10px", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
                   <div className="player-avatar" style={{ width: "48px", height: "48px" }}>
-                    {editingUser.avatar_url ? <img src={`${API_URL}${editingUser.avatar_url}`} alt="Avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : editingUser.username[0].toUpperCase()}
+                    {editingUser.avatar_url ? (
+                      <img 
+                        src={editingUser.avatar_url.startsWith("http") ? editingUser.avatar_url : `${API_URL}${editingUser.avatar_url}`} 
+                        alt="Avatar" 
+                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
+                      />
+                    ) : editingUser.username[0].toUpperCase()}
                   </div>
                   <div>
                     <button type="button" onClick={() => document.getElementById("admin-user-avatar")?.click()} className="btn btn-sm">Change Photo</button>
@@ -451,7 +457,13 @@ export default function AdminPage() {
               ) : selectedLeagueMembers.map((m: any) => (
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "10px", border: "1px solid var(--border)" }}>
                   <div className="player-avatar" style={{ width: "40px", height: "40px", fontSize: "14px" }}>
-                    {m.avatar_url ? <img src={`${API_URL}${m.avatar_url}`} alt={m.username} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : m.username[0].toUpperCase()}
+                    {m.avatar_url ? (
+                      <img 
+                        src={m.avatar_url.startsWith("http") ? m.avatar_url : `${API_URL}${m.avatar_url}`} 
+                        alt={m.username} 
+                        style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
+                      />
+                    ) : m.username[0].toUpperCase()}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
