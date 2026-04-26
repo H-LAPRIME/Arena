@@ -112,7 +112,11 @@ export default function NavbarWrapper() {
           <li className="mobile-only-link">
             <Link href="/profile" className={pathname === "/profile" ? "active" : ""} onClick={closeMenu}>
               {user.avatar_url ? (
-                <img src={`${API_URL}${user.avatar_url}`} alt="Avatar" style={{ width: "18px", height: "18px", borderRadius: "50%", objectFit: "cover" }} />
+                <img 
+                  src={user.avatar_url.startsWith("http") ? user.avatar_url : `${API_URL}${user.avatar_url}`} 
+                  alt="Avatar" 
+                  style={{ width: "18px", height: "18px", borderRadius: "50%", objectFit: "cover" }} 
+                />
               ) : (
                 <span className={isAdmin ? "admin-dot" : "user-dot"} style={{ width: "8px", height: "8px" }} />
               )}
@@ -198,7 +202,11 @@ export default function NavbarWrapper() {
           
           <Link href="/profile" className="user-badge" title="My Profile" style={{ gap: "8px" }}>
             {user.avatar_url ? (
-              <img src={`${API_URL}${user.avatar_url}`} alt="Avatar" style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }} />
+              <img 
+                src={user.avatar_url.startsWith("http") ? user.avatar_url : `${API_URL}${user.avatar_url}`} 
+                alt="Avatar" 
+                style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }} 
+              />
             ) : (
               <span className={isAdmin ? "admin-dot" : "user-dot"} />
             )}
