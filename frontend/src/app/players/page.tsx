@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi } from "@/lib/api";
+import { usersApi, getAvatarUrl } from "@/lib/api";
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<any[]>([]);
@@ -24,8 +24,12 @@ export default function PlayersPage() {
           <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
             <div className="card" style={{ textAlign: "center", cursor: "pointer" }}>
               <div className="player-avatar" style={{ width: "80px", height: "80px", fontSize: "32px", margin: "0 auto 16px",
-                background: p.is_lord ? "var(--gradient-gold)" : "var(--gradient-green)" }}>
-                {p.username[0].toUpperCase()}
+                background: p.is_lord ? "var(--gradient-gold)" : "var(--gradient-green)", overflow: "hidden" }}>
+                {p.avatar_url ? (
+                  <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  p.username[0].toUpperCase()
+                )}
               </div>
               <h3 style={{ fontFamily: "var(--font-display)", fontSize: "18px", marginBottom: "8px" }}>
                 {p.username}
