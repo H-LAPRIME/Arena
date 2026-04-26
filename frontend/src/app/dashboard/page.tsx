@@ -127,7 +127,7 @@ export default function DashboardPage() {
                   <div className="player-avatar" style={{ width: "48px", height: "48px", fontSize: "20px", margin: "0 auto 8px", overflow: "hidden" }}>
                     {matches[0].home_player_avatar ? (
                       <img 
-                        src={getAvatarUrl(matches[0].home_player_avatar)} 
+                        src={getAvatarUrl(matches[0].home_player_avatar) || ""} 
                         alt="Avatar" 
                         style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                       />
@@ -143,7 +143,7 @@ export default function DashboardPage() {
                   <div className="player-avatar" style={{ width: "48px", height: "48px", fontSize: "20px", margin: "0 auto 8px", background: "var(--gradient-green)", overflow: "hidden" }}>
                     {matches[0].away_player_avatar ? (
                       <img 
-                        src={getAvatarUrl(matches[0].away_player_avatar)} 
+                        src={getAvatarUrl(matches[0].away_player_avatar) || ""} 
                         alt="Avatar" 
                         style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                       />
@@ -267,7 +267,7 @@ export default function DashboardPage() {
                     <div className="player-avatar" style={{ width: "36px", height: "36px", fontSize: "14px" }}>
                       {m.avatar_url ? (
                         <img 
-                          src={getAvatarUrl(m.avatar_url)} 
+                          src={getAvatarUrl(m.avatar_url) || ""} 
                           alt={m.username} 
                           style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
                         />
