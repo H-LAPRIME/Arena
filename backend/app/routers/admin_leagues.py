@@ -465,20 +465,36 @@ async def update_user_avatar(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
         
+    # 1. Prepare filename
     settings = get_settings()
-    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    
     file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
     filename = f"avatar_{user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
-    file_path = os.path.join(settings.UPLOAD_DIR, filename)
     
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    user.avatar_url = f"/uploads/{filename}"
-    db.commit()
-    
-    return {"avatar_url": user.avatar_url}
+    # 2. Upload to Supabase
+    try:
+        from supabase import create_client, Client
+        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Upload
+        supabase.storage.from_("avatars").upload(
+            path=filename,
+            file=file_content,
+            file_options={"content-type": file.content_type}
+        )
+        
+        # 3. Get Public URL
+        public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/avatars/{filename}"
+        
+        user.avatar_url = public_url
+        db.commit()
+        
+        return {"avatar_url": user.avatar_url}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
 
 
 # ── League standings (admin view) ──────────────────────────────────────────────
