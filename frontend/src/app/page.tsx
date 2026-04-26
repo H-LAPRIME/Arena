@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi, leaguesApi } from "@/lib/api";
+import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 
@@ -77,39 +77,56 @@ export default function Home() {
               <span className="card-title">Standings — {activeLeague?.name}</span>
               <Link href="/scoreboard" className="btn btn-sm btn-secondary">View Details</Link>
             </div>
-            <table className="scoreboard">
-              <thead>
-                <tr>
-                  <th>#</th><th>Player</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Form</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standings.map((s: any, i: number) => (
-                  <tr key={s.id}>
-                    <td className={`rank rank-${i + 1}`}>{i + 1}</td>
-                    <td>
-                      <div className="player-cell">
-                        <div className="player-avatar">{(s.username || "?")[0].toUpperCase()}</div>
-                        <span className="player-name">{s.username}</span>
-                      </div>
-                    </td>
-                    <td>{s.played}</td>
-                    <td>{s.wins}</td>
-                    <td>{s.draws}</td>
-                    <td>{s.losses}</td>
-                    <td>{s.goal_difference > 0 ? `+${s.goal_difference}` : s.goal_difference}</td>
-                    <td className="points-cell">{s.points}</td>
-                    <td>
-                      <div className="form-dots">
-                        {(s.form || []).map((f: string, j: number) => (
-                          <span key={j} className={`form-dot ${f}`}>{f}</span>
-                        ))}
-                      </div>
-                    </td>
+            <div className="table-container admin-table-container" style={{ margin: 0, border: "none", borderRadius: 0 }}>
+              <table className="scoreboard">
+                <thead>
+                  <tr>
+                    <th>#</th><th>Player</th><th>MP</th><th>Rest</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th><th>Form</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {standings.map((s: any, i: number) => {
+                    const totalMatches = (standings.length - 1) * 2;
+                    const restant = Math.max(0, totalMatches - s.played);
+                    return (
+                      <tr key={s.id}>
+                        <td className={`rank rank-${i + 1}`}>{i + 1}</td>
+                        <td>
+                          <div className="player-cell">
+                            <div className="player-avatar" style={{ overflow: "hidden" }}>
+                              {s.avatar_url ? (
+                                <img 
+                                  src={getAvatarUrl(s.avatar_url) || ""} 
+                                  alt="Avatar" 
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                                />
+                              ) : (
+                                (s.username || "?")[0].toUpperCase()
+                              )}
+                            </div>
+                            <span className="player-name">{s.username}</span>
+                          </div>
+                        </td>
+                        <td>{s.played}</td>
+                        <td style={{ color: "var(--text-muted)", fontWeight: 600 }}>{restant}</td>
+                        <td>{s.wins}</td>
+                        <td>{s.draws}</td>
+                        <td>{s.losses}</td>
+                        <td>{s.goal_difference > 0 ? `+${s.goal_difference}` : s.goal_difference}</td>
+                        <td className="points-cell">{s.points}</td>
+                        <td>
+                          <div className="form-dots">
+                            {(s.form || []).map((f: string, j: number) => (
+                              <span key={j} className={`form-dot ${f}`}>{f}</span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

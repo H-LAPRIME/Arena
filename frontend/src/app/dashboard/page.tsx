@@ -245,7 +245,7 @@ export default function DashboardPage() {
       {/* League Details Modal */}
       {viewingLeague && (
         <div className="modal-overlay" onClick={() => setViewingLeague(null)}>
-          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ width: "500px" }}>
+          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ width: "500px", maxWidth: "95vw" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2 style={{ margin: 0, fontSize: "20px" }}>{viewingLeague.name}</h2>
               <button onClick={() => setViewingLeague(null)} className="btn btn-sm" style={{ minWidth: "auto", padding: "4px 8px" }}>✕</button>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "24px", margin: "0 auto 12px", overflow: "hidden" }}>
                   {p.avatar_url ? (
                     <img 
-                      src={p.avatar_url.startsWith("http") ? p.avatar_url : `${API_URL}${p.avatar_url}`} 
+                      src={getAvatarUrl(p.avatar_url) || ""} 
                       alt="Avatar" 
                       style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                     />

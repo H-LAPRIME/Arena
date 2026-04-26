@@ -63,60 +63,55 @@ export default function ScoreboardPage() {
             <table className="scoreboard">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Player</th>
-                  <th>MP</th>
-                  <th>W</th>
-                  <th>D</th>
-                  <th>L</th>
-                  <th>GF</th>
-                  <th>GA</th>
-                  <th>GD</th>
-                  <th>Pts</th>
-                  <th>Form</th>
+                  <th>#</th><th>Player</th><th>MP</th><th>Rest</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th>
                 </tr>
               </thead>
               <tbody>
-                {standings.map((s: any, i: number) => (
-                  <tr key={s.id}>
-                    <td className={`rank rank-${i + 1}`}>
-                      {i === 0 ? <TrophyIcon /> : i + 1}
-                    </td>
-                    <td>
-                      <div className="player-cell">
-                        <div className="player-avatar" style={{ overflow: "hidden" }}>
-                          {s.avatar_url ? (
-                            <img 
-                              src={getAvatarUrl(s.avatar_url) || ""} 
-                              alt="Avatar" 
-                              style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                            />
-                          ) : (
-                            (s.username || "?")[0].toUpperCase()
-                          )}
+                {standings.map((s: any, i: number) => {
+                  const totalMatches = (standings.length - 1) * 2;
+                  const restant = Math.max(0, totalMatches - s.played);
+                  return (
+                    <tr key={s.id}>
+                      <td className={`rank rank-${i + 1}`}>
+                        {i === 0 ? <TrophyIcon /> : i + 1}
+                      </td>
+                      <td>
+                        <div className="player-cell">
+                          <div className="player-avatar" style={{ overflow: "hidden" }}>
+                            {s.avatar_url ? (
+                              <img 
+                                src={getAvatarUrl(s.avatar_url) || ""} 
+                                alt="Avatar" 
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                              />
+                            ) : (
+                              (s.username || "?")[0].toUpperCase()
+                            )}
+                          </div>
+                          <a href={`/players/${s.user_id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                            <span className="player-name">{s.username}</span>
+                          </a>
                         </div>
-                        <a href={`/players/${s.user_id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <span className="player-name">{s.username}</span>
-                        </a>
-                      </div>
-                    </td>
-                    <td>{s.played}</td>
-                    <td style={{ color: "var(--green)", fontWeight: 600 }}>{s.wins}</td>
-                    <td>{s.draws}</td>
-                    <td style={{ color: "var(--red)", fontWeight: 600 }}>{s.losses}</td>
-                    <td>{s.goals_for}</td>
-                    <td>{s.goals_against}</td>
-                    <td style={{ fontWeight: 600 }}>{s.goal_difference > 0 ? `+${s.goal_difference}` : s.goal_difference}</td>
-                    <td className="points-cell">{s.points}</td>
-                    <td>
-                      <div className="form-dots">
-                        {(s.form || []).map((f: string, j: number) => (
-                          <span key={j} className={`form-dot ${f}`}>{f}</span>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>{s.played}</td>
+                      <td style={{ color: "var(--text-muted)", fontWeight: 600 }}>{restant}</td>
+                      <td style={{ color: "var(--green)", fontWeight: 600 }}>{s.wins}</td>
+                      <td>{s.draws}</td>
+                      <td style={{ color: "var(--red)" }}>{s.losses}</td>
+                      <td>{s.goals_for}</td>
+                      <td>{s.goals_against}</td>
+                      <td style={{ fontWeight: 600 }}>{s.goal_difference > 0 ? `+${s.goal_difference}` : s.goal_difference}</td>
+                      <td className="points-cell">{s.points}</td>
+                      <td>
+                        <div className="form-dots">
+                          {(s.form || []).map((f: string, j: number) => (
+                            <span key={j} className={`form-dot ${f}`}>{f}</span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
