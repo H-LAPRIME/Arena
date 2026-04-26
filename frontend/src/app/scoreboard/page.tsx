@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { leaguesApi, certificatesApi } from "@/lib/api";
+import { leaguesApi, certificatesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ChartIcon, TrophyIcon, ArrowRightIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
@@ -87,7 +87,7 @@ export default function ScoreboardPage() {
                         <div className="player-avatar" style={{ overflow: "hidden" }}>
                           {s.avatar_url ? (
                             <img 
-                              src={s.avatar_url.startsWith("http") ? s.avatar_url : `${API_URL}${s.avatar_url}`} 
+                              src={getAvatarUrl(s.avatar_url) || ""} 
                               alt="Avatar" 
                               style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                             />

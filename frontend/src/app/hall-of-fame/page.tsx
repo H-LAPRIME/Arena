@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi, leaguesApi } from "@/lib/api";
+import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 
 export default function HallOfFamePage() {
   const [players, setPlayers] = useState<any[]>([]);
@@ -74,7 +74,7 @@ export default function HallOfFamePage() {
               <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "22px", margin: "0 auto 8px", overflow: "hidden" }}>
                 {p.avatar_url ? (
                   <img 
-                    src={p.avatar_url.startsWith("http") ? p.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${p.avatar_url}`} 
+                    src={getAvatarUrl(p.avatar_url) || ""} 
                     alt="Avatar" 
                     style={{ width: "100%", height: "100%", objectFit: "cover" }} 
                   />

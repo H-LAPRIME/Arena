@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi, leaguesApi, matchesApi } from "@/lib/api";
+import { usersApi, leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
 import { GridIcon, ZapIcon, GamepadIcon, TrophyIcon, UsersIcon, PlusIcon, HomeIcon, PlaneIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 import { useAuth } from "@/lib/auth";
@@ -126,7 +126,11 @@ export default function DashboardPage() {
                 <div style={{ textAlign: "center" }}>
                   <div className="player-avatar" style={{ width: "48px", height: "48px", fontSize: "20px", margin: "0 auto 8px", overflow: "hidden" }}>
                     {matches[0].home_player_avatar ? (
-                      <img src={`${API_URL}${matches[0].home_player_avatar}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img 
+                        src={getAvatarUrl(matches[0].home_player_avatar)} 
+                        alt="Avatar" 
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                      />
                     ) : (
                       (matches[0].home_player_name || "?")[0].toUpperCase()
                     )}
@@ -138,7 +142,11 @@ export default function DashboardPage() {
                 <div style={{ textAlign: "center" }}>
                   <div className="player-avatar" style={{ width: "48px", height: "48px", fontSize: "20px", margin: "0 auto 8px", background: "var(--gradient-green)", overflow: "hidden" }}>
                     {matches[0].away_player_avatar ? (
-                      <img src={`${API_URL}${matches[0].away_player_avatar}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img 
+                        src={getAvatarUrl(matches[0].away_player_avatar)} 
+                        alt="Avatar" 
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                      />
                     ) : (
                       (matches[0].away_player_name || "?")[0].toUpperCase()
                     )}
@@ -257,7 +265,15 @@ export default function DashboardPage() {
                 {leagueMembers.map((m: any) => (
                   <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "10px", borderRadius: "10px", border: "1px solid var(--border)" }}>
                     <div className="player-avatar" style={{ width: "36px", height: "36px", fontSize: "14px" }}>
-                      {m.avatar_url ? <img src={`${API_URL}${m.avatar_url}`} alt={m.username} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : m.username[0].toUpperCase()}
+                      {m.avatar_url ? (
+                        <img 
+                          src={getAvatarUrl(m.avatar_url)} 
+                          alt={m.username} 
+                          style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
+                        />
+                      ) : (
+                        m.username[0].toUpperCase()
+                      )}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -297,7 +313,11 @@ export default function DashboardPage() {
               <div className="stat-card" style={{ cursor: "pointer" }}>
                 <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "24px", margin: "0 auto 12px", overflow: "hidden" }}>
                   {p.avatar_url ? (
-                    <img src={`${API_URL}${p.avatar_url}`} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img 
+                      src={p.avatar_url.startsWith("http") ? p.avatar_url : `${API_URL}${p.avatar_url}`} 
+                      alt="Avatar" 
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                    />
                   ) : (
                     p.username[0].toUpperCase()
                   )}

@@ -13,6 +13,9 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const headers: Record<string, string> = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string> || {}),
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
   };
 
   if (token) {
@@ -31,6 +34,16 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   }
 
   return res.json();
+}
+
+export function getAvatarUrl(path: string | null) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  // Nettoyage de l'API_URL (enlever le slash final s'il existe)
+  const base = API_URL.endsWith("/") ? API_URL.slice(0, -1) : API_URL;
+  // Nettoyage du path (rajouter le slash initial s'il manque)
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${cleanPath}`;
 }
 
 // Auth

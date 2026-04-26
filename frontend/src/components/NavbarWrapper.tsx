@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState, useRef } from "react";
-import { usersApi } from "@/lib/api";
+import { usersApi, getAvatarUrl } from "@/lib/api";
 import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon } from "@/components/Icons";
 
 const navLinks = [
@@ -113,7 +113,7 @@ export default function NavbarWrapper() {
             <Link href="/profile" className={pathname === "/profile" ? "active" : ""} onClick={closeMenu}>
               {user.avatar_url ? (
                 <img 
-                  src={user.avatar_url.startsWith("http") ? user.avatar_url : `${API_URL}${user.avatar_url}`} 
+                  src={getAvatarUrl(user.avatar_url) || ""} 
                   alt="Avatar" 
                   style={{ width: "18px", height: "18px", borderRadius: "50%", objectFit: "cover" }} 
                 />
@@ -203,7 +203,7 @@ export default function NavbarWrapper() {
           <Link href="/profile" className="user-badge" title="My Profile" style={{ gap: "8px" }}>
             {user.avatar_url ? (
               <img 
-                src={user.avatar_url.startsWith("http") ? user.avatar_url : `${API_URL}${user.avatar_url}`} 
+                src={getAvatarUrl(user.avatar_url) || ""} 
                 alt="Avatar" 
                 style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }} 
               />

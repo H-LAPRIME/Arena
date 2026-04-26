@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { claimsApi, usersApi, matchesApi, leaguesApi } from "@/lib/api";
+import { claimsApi, usersApi, matchesApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, CheckIcon, PlusIcon, TrashIcon } from "@/components/Icons";
@@ -353,7 +353,7 @@ export default function AdminPage() {
                   <div className="player-avatar" style={{ width: "48px", height: "48px" }}>
                     {editingUser.avatar_url ? (
                       <img 
-                        src={editingUser.avatar_url.startsWith("http") ? editingUser.avatar_url : `${API_URL}${editingUser.avatar_url}`} 
+                        src={getAvatarUrl(editingUser.avatar_url) || ""} 
                         alt="Avatar" 
                         style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
                       />
@@ -459,7 +459,7 @@ export default function AdminPage() {
                   <div className="player-avatar" style={{ width: "40px", height: "40px", fontSize: "14px" }}>
                     {m.avatar_url ? (
                       <img 
-                        src={m.avatar_url.startsWith("http") ? m.avatar_url : `${API_URL}${m.avatar_url}`} 
+                        src={getAvatarUrl(m.avatar_url) || ""} 
                         alt={m.username} 
                         style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} 
                       />
