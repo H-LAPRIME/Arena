@@ -85,9 +85,45 @@ export default function NavbarWrapper() {
           <span className="navbar-brand-text">EFOOTBALL ARENA</span>
         </Link>
 
-        <button className="mobile-menu-btn" onClick={toggleMenu}>
-          {isMenuOpen ? <XIcon /> : <MenuIcon />}
-        </button>
+        <div className="mobile-header-actions">
+          <div className="notif-wrapper" ref={notifRef} style={{ position: "relative" }}>
+            <button 
+              className={`notif-bell ${unreadCount > 0 ? "has-unread" : ""}`}
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              title="Notifications"
+            >
+              <BellIcon />
+              {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+            </button>
+            {isNotifOpen && (
+              <div className="notif-dropdown card mobile-dropdown">
+                <div className="notif-header">
+                  <span>Notifications</span>
+                  {unreadCount > 0 && <span className="unread-count">{unreadCount} new</span>}
+                </div>
+                <div className="notif-list">
+                  {notifs.length === 0 ? (
+                    <div className="notif-empty">No notifications</div>
+                  ) : (
+                    notifs.map(n => (
+                      <div 
+                        key={n.id} 
+                        className={`notif-item ${n.is_read ? "read" : "unread"}`}
+                        onClick={() => markAsRead(n.id)}
+                      >
+                        <div className="notif-item-title">{n.title}</div>
+                        <div className="notif-item-msg">{n.message}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <button className="mobile-menu-btn" onClick={toggleMenu}>
+            {isMenuOpen ? <XIcon /> : <MenuIcon />}
+          </button>
+        </div>
 
         <ul className={`navbar-links ${isMenuOpen ? "mobile-open" : ""}`}>
           {navLinks.map((link) => (
@@ -124,31 +160,6 @@ export default function NavbarWrapper() {
             </Link>
           </li>
           
-          <li className="mobile-only-link">
-            <button className="nav-item-btn" onClick={() => { setIsNotifOpen(!isNotifOpen); }}>
-              <BellIcon />
-              Notifications {unreadCount > 0 && <span className="notif-badge-inline">{unreadCount}</span>}
-            </button>
-            {isNotifOpen && (
-              <div className="mobile-notif-list">
-                {notifs.length === 0 ? (
-                  <div className="notif-empty" style={{ padding: "10px", fontSize: "12px" }}>No notifications</div>
-                ) : (
-                  notifs.slice(0, 5).map(n => (
-                    <div 
-                      key={n.id} 
-                      className={`notif-item ${n.is_read ? "read" : "unread"}`}
-                      onClick={() => markAsRead(n.id)}
-                      style={{ padding: "10px 16px", borderBottom: "1px solid var(--border)", fontSize: "12px" }}
-                    >
-                      <div style={{ fontWeight: 600 }}>{n.title}</div>
-                      <div style={{ color: "var(--text-muted)", fontSize: "11px" }}>{n.message}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </li>
           
           <li className="mobile-only-link">
             <button className="nav-item-btn" onClick={() => { logout(); closeMenu(); }}>

@@ -137,6 +137,20 @@ body {
 
 @media (max-width: 768px) {
   .mobile-menu-btn { display: block; }
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mobile-dropdown {
+    position: fixed !important;
+    top: 64px !important;
+    right: 15px !important;
+    width: calc(100vw - 30px) !important;
+    max-width: 350px !important;
+    z-index: 2000 !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+  }
   .navbar-links {
     position: fixed; top: 64px; left: 0; width: 100%; height: calc(100vh - 64px);
     background: var(--white); flex-direction: column; padding: 20px;
