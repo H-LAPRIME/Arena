@@ -444,9 +444,14 @@ def delete_user(user_id: str, admin: User = Depends(require_admin), db: Session 
         raise HTTPException(status_code=404, detail="User not found")
     if user.role == "admin":
         raise HTTPException(status_code=400, detail="Cannot delete admin account")
-    user.is_active = False
+    
+    # Delete related records first to avoid FK errors
+    db.query(LeagueMember).filter(LeagueMember.user_id == user_id).delete()
+    db.query(Standing).filter(Standing.user_id == user_id).delete()
+    
+    db.delete(user)
     db.commit()
-    return {"message": "User deactivated"}
+    return {"message": "User deleted completely from database"}
 
 
 @router.post("/users/{user_id}/avatar")

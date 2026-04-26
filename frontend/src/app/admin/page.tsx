@@ -77,9 +77,21 @@ export default function AdminPage() {
     } catch (err: any) { setMsg("error:" + err.message); }
   }
   async function handleDeleteUser(id: string) {
-    if(!confirm("Deactivate this player?")) return;
-    try { await usersApi.delete(id); setMsg("success:Player deactivated."); loadAll(); } 
+    if(!confirm("DELETE THIS PLAYER COMPLETELY FROM DATABASE? This action is IRREVERSIBLE and will delete all their data!")) return;
+    try { await usersApi.delete(id); setMsg("success:Player deleted completely."); loadAll(); } 
     catch (err: any) { setMsg("error:" + err.message); }
+  }
+
+  async function handleRemoveMember(leagueId: string, userId: string) {
+    if(!confirm("Remove this player from the league?")) return;
+    try {
+      await leaguesApi.removeMember(leagueId, userId);
+      setMsg("success:Player removed from league.");
+      // Refresh members list
+      const members = await leaguesApi.getMembers(leagueId);
+      setSelectedLeagueMembers(members);
+      loadAll();
+    } catch (err: any) { setMsg("error:" + err.message); }
   }
 
   async function handleAdminAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -472,9 +484,19 @@ export default function AdminPage() {
                     </div>
                     <div style={{ fontSize: "12px", color: "var(--text-muted)" }}> Joined on {new Date(m.joined_at).toLocaleDateString()}</div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(255, 215, 0, 0.1)", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(255, 215, 0, 0.2)" }}>
-                    <span style={{ color: "gold", fontSize: "12px" }}>🏆</span>
-                    <span style={{ fontWeight: 700, color: "gold", fontSize: "13px" }}>{m.total_trophies || 0}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(255, 215, 0, 0.1)", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(255, 215, 0, 0.2)" }}>
+                      <span style={{ color: "gold", fontSize: "12px" }}>🏆</span>
+                      <span style={{ fontWeight: 700, color: "gold", fontSize: "13px" }}>{m.total_trophies || 0}</span>
+                    </div>
+                    <button 
+                      onClick={() => handleRemoveMember(m.league_id || (seasons.find((s:any)=>s.status==="active" || s.status==="pending")?.id), m.user_id)}
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: "4px 8px", minWidth: "auto" }}
+                      title="Remove from league"
+                    >
+                      <TrashIcon />
+                    </button>
                   </div>
                 </div>
               ))}

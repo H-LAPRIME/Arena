@@ -100,6 +100,7 @@ export const leaguesApi = {
   getH2HAdvice: (id: string, opponentId: string) => apiFetch(`/api/leagues/${id}/h2h-advice/${opponentId}`),
   getMatchAdvice: (matchId: string) => apiFetch(`/api/leagues/match-advice/${matchId}`),
   quit: (id: string) => apiFetch(`/api/leagues/${id}/quit`, { method: "DELETE" }),
+  removeMember: (leagueId: string, userId: string) => apiFetch(`/api/admin/leagues/${leagueId}/members/${userId}`, { method: "DELETE" }),
 };
 
 // Matches
