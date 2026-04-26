@@ -131,6 +131,18 @@ export default function AdminPage() {
       loadAll();
     } catch (err: any) { setMsg("error:" + err.message); }
   }
+  const [seasonMembers, setSeasonMembers] = useState<Record<string, any[]>>({});
+
+  async function loadSeasonMembers(leagueId: string) {
+    try {
+      const m = await leaguesApi.getOne(leagueId);
+      // Wait, leaguesApi.getOne returns the league. 
+      // We need a specific endpoint for members.
+      const members = await leaguesApi.getMembers(leagueId);
+      setSeasonMembers(prev => ({ ...prev, [leagueId]: members }));
+    } catch (err: any) { setMsg("error:" + err.message); }
+  }
+
   async function handleDeleteSeason(id: string) {
     if(!confirm("Supprimer cette saison ?")) return;
     try { await leaguesApi.delete(id); setMsg("success:Saison supprimée."); loadAll(); } 
@@ -307,7 +319,23 @@ export default function AdminPage() {
                   <tr key={s.id}>
                     <td><span className="player-name">{s.name}</span></td>
                     <td><code>{s.join_code}</code></td>
-                    <td>{s.member_count} / {s.max_members}</td>
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span>{s.member_count} / {s.max_members}</span>
+                        <button 
+                          onClick={() => loadSeasonMembers(s.id)} 
+                          className="btn btn-sm" 
+                          style={{ fontSize: "10px", padding: "2px 6px", width: "fit-content" }}
+                        >
+                          View Players
+                        </button>
+                        {seasonMembers[s.id] && (
+                          <div style={{ fontSize: "11px", color: "var(--accent-light)", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "4px", marginTop: "4px" }}>
+                            {seasonMembers[s.id].map(m => m.username).join(", ")}
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td><span className={s.status === "active" ? "badge badge-green" : s.status === "completed" ? "badge badge-gold" : "badge"}>{s.status}</span></td>
                     <td>
                       <button onClick={() => { setEditingSeason(s); setIsSeasonModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
