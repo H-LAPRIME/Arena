@@ -17,8 +17,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(url, { ...options, headers });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(err.detail || `HTTP ${res.status}`);
+    const errData = await res.json().catch(() => ({ detail: "Request failed" }));
+    // Si c'est une erreur 422, on jette l'objet entier pour que le frontend puisse le parser
+    const error: any = new Error(typeof errData.detail === 'string' ? errData.detail : "Validation Error");
+    error.detail = errData.detail;
+    error.status = res.status;
+    throw error;
   }
 
   return res.json();
