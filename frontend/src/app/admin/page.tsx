@@ -27,6 +27,8 @@ export default function AdminPage() {
   const [isMatchModalOpen, setIsMatchModalOpen] = useState(false);
   const [editingSeason, setEditingSeason] = useState<any>(null);
   const [isSeasonModalOpen, setIsSeasonModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [selectedLeagueMembers, setSelectedLeagueMembers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isLoading && !isAdmin) router.replace("/dashboard");
@@ -131,15 +133,11 @@ export default function AdminPage() {
       loadAll();
     } catch (err: any) { setMsg("error:" + err.message); }
   }
-  const [seasonMembers, setSeasonMembers] = useState<Record<string, any[]>>({});
-
   async function loadSeasonMembers(leagueId: string) {
     try {
-      const m = await leaguesApi.getOne(leagueId);
-      // Wait, leaguesApi.getOne returns the league. 
-      // We need a specific endpoint for members.
       const members = await leaguesApi.getMembers(leagueId);
-      setSeasonMembers(prev => ({ ...prev, [leagueId]: members }));
+      setSelectedLeagueMembers(members);
+      setIsMembersModalOpen(true);
     } catch (err: any) { setMsg("error:" + err.message); }
   }
 
@@ -320,20 +318,15 @@ export default function AdminPage() {
                     <td><span className="player-name">{s.name}</span></td>
                     <td><code>{s.join_code}</code></td>
                     <td>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <span>{s.member_count} / {s.max_members}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontWeight: 600 }}>{s.member_count} / {s.max_members}</span>
                         <button 
                           onClick={() => loadSeasonMembers(s.id)} 
                           className="btn btn-sm" 
-                          style={{ fontSize: "10px", padding: "2px 6px", width: "fit-content" }}
+                          style={{ fontSize: "11px", padding: "4px 10px", background: "rgba(124, 58, 237, 0.1)", color: "var(--accent-light)", border: "1px solid var(--border-accent)" }}
                         >
-                          View Players
+                          View List
                         </button>
-                        {seasonMembers[s.id] && (
-                          <div style={{ fontSize: "11px", color: "var(--accent-light)", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "4px", marginTop: "4px" }}>
-                            {seasonMembers[s.id].map(m => m.username).join(", ")}
-                          </div>
-                        )}
                       </div>
                     </td>
                     <td><span className={s.status === "active" ? "badge badge-green" : s.status === "completed" ? "badge badge-gold" : "badge"}>{s.status}</span></td>
@@ -439,6 +432,43 @@ export default function AdminPage() {
                 <button type="button" onClick={() => setIsMatchModalOpen(false)} className="btn" style={{ flex: 1 }}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Members Modal */}
+      {isMembersModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content card" style={{ width: "500px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h2 style={{ margin: 0 }}>League Participants</h2>
+              <button onClick={() => setIsMembersModalOpen(false)} className="btn btn-sm" style={{ minWidth: "auto", padding: "4px 8px" }}>✕</button>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "400px", overflowY: "auto", paddingRight: "10px" }}>
+              {selectedLeagueMembers.length === 0 ? (
+                <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px" }}>No participants yet.</p>
+              ) : selectedLeagueMembers.map((m: any) => (
+                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "12px", borderRadius: "10px", border: "1px solid var(--border)" }}>
+                  <div className="player-avatar" style={{ width: "40px", height: "40px", fontSize: "14px" }}>
+                    {m.avatar_url ? <img src={`${API_URL}${m.avatar_url}`} alt={m.username} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} /> : m.username[0].toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontWeight: 600 }}>{m.username}</span>
+                      {m.is_lord && <span title="Lord of the Game" style={{ color: "gold", fontSize: "12px" }}>👑</span>}
+                    </div>
+                    <div style={{ fontSize: "12px", color: "var(--text-muted)" }}> Joined on {new Date(m.joined_at).toLocaleDateString()}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(255, 215, 0, 0.1)", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(255, 215, 0, 0.2)" }}>
+                    <span style={{ color: "gold", fontSize: "12px" }}>🏆</span>
+                    <span style={{ fontWeight: 700, color: "gold", fontSize: "13px" }}>{m.total_trophies || 0}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={() => setIsMembersModalOpen(false)} className="btn btn-primary" style={{ width: "100%", marginTop: "20px" }}>Close</button>
           </div>
         </div>
       )}
