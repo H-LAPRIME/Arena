@@ -45,7 +45,7 @@ export default function RegisterPage() {
         </div>
         <h1 className="auth-title">REGISTER</h1>
         <p className="auth-subtitle">
-          Join the arena — The 1st account will be <span style={{ color: "var(--gold)", fontWeight: 700 }}>Administrator</span>
+          Join the arena and start competing today
         </p>
 
         <form onSubmit={handleSubmit}>
