@@ -1,4 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+let API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// Force HTTPS for production (Hugging Face)
+if (API_URL.includes("hf.space") && API_URL.startsWith("http://")) {
+  API_URL = API_URL.replace("http://", "https://");
+}
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const url = `${API_URL}${endpoint}`;
