@@ -22,7 +22,14 @@ export default function RegisterPage() {
       const res = await authApi.register({ username: form.username, email: form.email, password: form.password });
       login(res.access_token, res.user);
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      console.error("Registration error details:", err);
+      if (err.detail && Array.isArray(err.detail)) {
+        // Handle FastAPI validation errors (422)
+        const messages = err.detail.map((d: any) => `${d.loc[d.loc.length - 1]}: ${d.msg}`);
+        setError(messages.join(", "));
+      } else {
+        setError(err.message || "Registration failed. Check your information.");
+      }
     }
     setLoading(false);
   }
