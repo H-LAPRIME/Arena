@@ -158,7 +158,19 @@ def resolve_champion(db: Session, league: League) -> None:
     # Increment trophies
     champion.total_trophies += 1
 
-    # Check for Lord of the Game (3 trophies)
+    from app.models.notification import Notification
+    from app.models.league_member import LeagueMember
+
+    # 1. Notification for the Champion
+    champion_notif = Notification(
+        id=str(uuid.uuid4()),
+        user_id=champion.id,
+        title="LEAGUE CHAMPION! 🏆",
+        message=f"Félicitations {champion.username}! Tu as remporté la ligue '{league.name}'. Ton trophée a été ajouté à ton profil."
+    )
+    db.add(champion_notif)
+
+    # 2. Check for Lord of the Game (3 trophies)
     if champion.total_trophies >= 3 and not champion.is_lord:
         champion.is_lord = True
         lord_title = Title(
@@ -168,5 +180,25 @@ def resolve_champion(db: Session, league: League) -> None:
             title_type="lord",
         )
         db.add(lord_title)
+        
+        lord_notif = Notification(
+            id=str(uuid.uuid4()),
+            user_id=champion.id,
+            title="LORD OF THE GAME 👑",
+            message="Incroyable ! Avec 3 trophées, tu deviens officiellement un Lord de l'Arène !"
+        )
+        db.add(lord_notif)
+
+    # 3. Notification for all participants (League Report Ready)
+    members = db.query(LeagueMember).filter(LeagueMember.league_id == league.id).all()
+    for member in members:
+        if member.user_id != champion.id: # Champion already got a better one
+            report_notif = Notification(
+                id=str(uuid.uuid4()),
+                user_id=member.user_id,
+                title="Saison Terminée 📊",
+                message=f"La ligue '{league.name}' est finie. Va voir le Hall of Fame pour le rapport final !"
+            )
+            db.add(report_notif)
 
     db.commit()
