@@ -438,11 +438,45 @@ body {
 
 /* ===== MATCH CARDS ===== */
 .match-card {
+  position: relative;
+  overflow: hidden;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-md); padding: 16px;
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px;
   transition: box-shadow var(--ease-md), border-color var(--ease-md);
+}
+.match-card > * {
+  position: relative;
+  z-index: 1;
+}
+.match-card .match-card-bg-icon {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  width: 140px;
+  height: 140px;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+.match-card-bg-icon.home-bg {
+  color: var(--accent);
+  transform: translateY(-50%) rotate(15deg);
+}
+.match-card:hover .match-card-bg-icon.home-bg {
+  transform: translateY(-50%) rotate(5deg) scale(1.1);
+}
+.match-card-bg-icon.away-bg {
+  color: var(--green);
+  transform: translateY(-50%) rotate(-25deg);
+}
+.match-card:hover .match-card-bg-icon.away-bg {
+  transform: translateY(-50%) rotate(-35deg) scale(1.1);
 }
 @media (max-width: 480px) {
   .match-card { flex-direction: column; align-items: flex-start; gap: 16px; }

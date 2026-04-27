@@ -56,6 +56,16 @@ export default function MatchesPage() {
               onClick={() => isMyMatch && m.status === "pending" && router.push(`/claims?matchId=${m.id}`)}
               style={{ cursor: isMyMatch && m.status === "pending" ? "pointer" : "default" }}
             >
+              {isHome && (
+                <div className="match-card-bg-icon home-bg">
+                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+              )}
+              {isAway && (
+                <div className="match-card-bg-icon away-bg">
+                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.7 5.2c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
+                </div>
+              )}
               <span className="match-day-badge">MATCH DAY {m.match_day}</span>
               <div className="match-players">
                 <div style={{ textAlign: "center", minWidth: "100px" }}>
