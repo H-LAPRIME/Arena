@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState, useRef } from "react";
 import { usersApi, getAvatarUrl } from "@/lib/api";
-import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon, TrashIcon } from "@/components/Icons";
+import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon } from "@/components/Icons";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: <GridIcon /> },
@@ -35,12 +35,6 @@ export default function NavbarWrapper() {
   }, [user]);
 
   useEffect(() => {
-    if (isNotifOpen && unreadCount > 0) {
-      handleReadAll();
-    }
-  }, [isNotifOpen]);
-
-  useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setIsNotifOpen(false);
@@ -64,21 +58,6 @@ export default function NavbarWrapper() {
     } catch { /* Silent fail */ }
   }
 
-  async function handleReadAll() {
-    try {
-      await usersApi.markAllNotificationsRead();
-      setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch { /* Silent fail */ }
-  }
-
-  async function handleDeleteNotif(e: React.MouseEvent, id: string) {
-    e.stopPropagation();
-    try {
-      await usersApi.deleteNotification(id);
-      setNotifs(prev => prev.filter(n => n.id !== id));
-    } catch { /* Silent fail */ }
-  }
-
   const unreadCount = notifs.filter(n => !n.is_read).length;
 
   const publicPaths = ["/login", "/register"];
@@ -95,20 +74,20 @@ export default function NavbarWrapper() {
           <svg className="navbar-brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#2563eb"/>
-                <stop offset="100%" stopColor="#3b82f6"/>
+                <stop offset="0%" stopColor="#2563eb" />
+                <stop offset="100%" stopColor="#3b82f6" />
               </linearGradient>
             </defs>
-            <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" strokeWidth="2" fill="none"/>
-            <polygon points="12,10 22,16 12,22" fill="url(#logoGrad)"/>
-            <circle cx="16" cy="16" r="3" fill="url(#logoGrad)" opacity="0.6"/>
+            <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" strokeWidth="2" fill="none" />
+            <polygon points="12,10 22,16 12,22" fill="url(#logoGrad)" />
+            <circle cx="16" cy="16" r="3" fill="url(#logoGrad)" opacity="0.6" />
           </svg>
           <span className="navbar-brand-text">EFOOTBALL ARENA</span>
         </Link>
 
         <div className="mobile-header-actions mobile-only-flex">
           <div className="notif-wrapper" ref={notifRef} style={{ position: "relative" }}>
-            <button 
+            <button
               className={`notif-bell ${unreadCount > 0 ? "has-unread" : ""}`}
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               title="Notifications"
@@ -127,21 +106,13 @@ export default function NavbarWrapper() {
                     <div className="notif-empty">No notifications</div>
                   ) : (
                     notifs.map(n => (
-                      <div 
-                        key={n.id} 
+                      <div
+                        key={n.id}
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
-                        style={{ position: "relative" }}
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
-                        <button 
-                          className="notif-delete-btn"
-                          onClick={(e) => handleDeleteNotif(e, n.id)}
-                          title="Delete"
-                        >
-                          <TrashIcon />
-                        </button>
                       </div>
                     ))
                   )}
@@ -171,16 +142,16 @@ export default function NavbarWrapper() {
               </Link>
             </li>
           )}
-          
+
           <li className="mobile-only-link separator" style={{ width: "100%", height: "1px", background: "var(--border)", margin: "10px 0" }}></li>
-          
+
           <li className="mobile-only-link">
             <Link href="/profile" className={pathname === "/profile" ? "active" : ""} onClick={closeMenu}>
               {user.avatar_url ? (
-                <img 
-                  src={getAvatarUrl(user.avatar_url) || ""} 
-                  alt="Avatar" 
-                  style={{ width: "18px", height: "18px", borderRadius: "50%", objectFit: "cover" }} 
+                <img
+                  src={getAvatarUrl(user.avatar_url) || ""}
+                  alt="Avatar"
+                  style={{ width: "18px", height: "18px", borderRadius: "50%", objectFit: "cover" }}
                 />
               ) : (
                 <span className={isAdmin ? "admin-dot" : "user-dot"} style={{ width: "8px", height: "8px" }} />
@@ -188,8 +159,8 @@ export default function NavbarWrapper() {
               Profile
             </Link>
           </li>
-          
-          
+
+
           <li className="mobile-only-link">
             <button className="nav-item-btn" onClick={() => { logout(); closeMenu(); }}>
               <LogoutIcon />
@@ -201,7 +172,7 @@ export default function NavbarWrapper() {
         <div className="navbar-right desktop-only">
           {/* Notifications */}
           <div className="notif-wrapper" ref={notifRef} style={{ position: "relative" }}>
-            <button 
+            <button
               className={`notif-bell ${unreadCount > 0 ? "has-unread" : ""}`}
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               title="Notifications"
@@ -222,24 +193,16 @@ export default function NavbarWrapper() {
                     <div className="notif-empty">No notifications</div>
                   ) : (
                     notifs.map(n => (
-                      <div 
-                        key={n.id} 
+                      <div
+                        key={n.id}
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
-                        style={{ position: "relative" }}
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
                         <div className="notif-item-time">
                           {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
-                        <button 
-                          className="notif-delete-btn"
-                          onClick={(e) => handleDeleteNotif(e, n.id)}
-                          title="Delete"
-                        >
-                          <TrashIcon />
-                        </button>
                       </div>
                     ))
                   )}
@@ -247,13 +210,13 @@ export default function NavbarWrapper() {
               </div>
             )}
           </div>
-          
+
           <Link href="/profile" className="user-badge" title="My Profile" style={{ gap: "8px" }}>
             {user.avatar_url ? (
-              <img 
-                src={getAvatarUrl(user.avatar_url) || ""} 
-                alt="Avatar" 
-                style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }} 
+              <img
+                src={getAvatarUrl(user.avatar_url) || ""}
+                alt="Avatar"
+                style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }}
               />
             ) : (
               <span className={isAdmin ? "admin-dot" : "user-dot"} />
@@ -261,7 +224,7 @@ export default function NavbarWrapper() {
             <span style={{ fontWeight: 600 }}>{user.username}</span>
             {isAdmin && <span style={{ fontSize: "10px", color: "var(--accent)", fontFamily: "var(--font-display)" }}>ADMIN</span>}
           </Link>
-          
+
           <button onClick={logout} className="notif-bell" style={{ marginLeft: "8px" }} title="Logout">
             <LogoutIcon />
           </button>
