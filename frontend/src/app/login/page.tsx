@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { authApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,6 +22,18 @@ export default function LoginPage() {
       login(res.access_token, res.user);
     } catch (err: any) {
       setError(err.message || "Login failed");
+    }
+    setLoading(false);
+  }
+
+  async function handleGoogleSuccess(credentialResponse: any) {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await authApi.googleLogin(credentialResponse.credential);
+      login(res.access_token, res.user);
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
     }
     setLoading(false);
   }
@@ -117,6 +130,22 @@ export default function LoginPage() {
             ) : "Login"}
           </button>
         </form>
+
+        <div style={{ margin: "20px 0", display: "flex", alignItems: "center", gap: "10px", color: "var(--text-muted)", fontSize: "12px" }}>
+          <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.1)" }} />
+          <span>OR</span>
+          <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.1)" }} />
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError("Google login failed")}
+            theme="filled_black"
+            shape="pill"
+            width="100%"
+          />
+        </div>
 
         <p style={{ marginTop: "24px", textAlign: "center", fontSize: "13px", color: "var(--text-muted)" }}>
           Not registered yet?{" "}

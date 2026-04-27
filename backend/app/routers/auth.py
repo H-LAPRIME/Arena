@@ -10,8 +10,10 @@ import bcrypt
 from app.database import get_db
 from app.config import get_settings
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
+from app.schemas.user import UserCreate, UserLogin, UserResponse, Token, GoogleLogin
 from app.limiter import limiter
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 settings = get_settings()
@@ -113,6 +115,77 @@ async def login(request: Request, credentials: UserLogin, db: Session = Depends(
     )
 
 
-@router.get("/me", response_model=UserResponse)
+@router.post("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+
+@router.post("/google", response_model=Token)
+@limiter.limit("5/minute")
+async def google_auth(request: Request, data: GoogleLogin, db: Session = Depends(get_db)):
+    try:
+        # Verify Google token
+        idinfo = id_token.verify_oauth2_token(
+            data.token, 
+            google_requests.Request(), 
+            settings.GOOGLE_CLIENT_ID
+        )
+
+        if idinfo["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
+            raise ValueError("Wrong issuer")
+
+        email = idinfo["email"]
+        google_id = idinfo["sub"]
+        name = idinfo.get("name", email.split("@")[0])
+        picture = idinfo.get("picture", "")
+
+        # Check if user exists by google_id
+        user = db.query(User).filter(User.google_id == google_id).first()
+
+        # If not, check by email
+        if not user:
+            user = db.query(User).filter(User.email == email).first()
+            if user:
+                # Link existing user to google_id
+                user.google_id = google_id
+                if not user.avatar_url:
+                    user.avatar_url = picture
+                db.commit()
+            else:
+                # Create new user
+                is_first_user = db.query(User).count() == 0
+                role = "admin" if is_first_user else "user"
+                
+                # Ensure unique username
+                username = name
+                base_username = username
+                counter = 1
+                while db.query(User).filter(User.username == username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+
+                user = User(
+                    username=username,
+                    email=email,
+                    google_id=google_id,
+                    avatar_url=picture,
+                    role=role,
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+
+        if not user.is_active:
+            raise HTTPException(status_code=403, detail="Account deactivated")
+
+        token = create_access_token({"sub": user.id, "role": user.role})
+        
+        return Token(
+            access_token=token,
+            user=UserResponse.model_validate(user)
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid Google token: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")

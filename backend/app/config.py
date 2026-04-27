@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # Supabase
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
+    GOOGLE_CLIENT_ID: str = ""
+
 
     class Config:
         env_file = ".env"

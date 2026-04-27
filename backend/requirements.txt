@@ -17,3 +17,4 @@ slowapi==0.1.9
 email-validator==2.3.0
 Pillow>=10.0.0
 fpdf2>=2.7.0
+google-auth==2.29.0

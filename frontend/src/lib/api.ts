@@ -52,8 +52,11 @@ export const authApi = {
     apiFetch("/api/auth/register", { method: "POST", body: JSON.stringify(data) }),
   login: (data: { email: string; password: string }) =>
     apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify(data) }),
+  googleLogin: (token: string) =>
+    apiFetch("/api/auth/google", { method: "POST", body: JSON.stringify({ token }) }),
   me: () => apiFetch("/api/auth/me"),
 };
+
 
 // Users
 export const usersApi = {
