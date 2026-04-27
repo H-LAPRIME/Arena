@@ -83,6 +83,23 @@ def mark_notification_read(notif_id: str, current_user: User = Depends(get_curre
     return {"message": "Marked as read"}
 
 
+@router.put("/me/notifications/read-all")
+def mark_all_notifications_read(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db.query(Notification).filter(Notification.user_id == current_user.id, Notification.is_read == False).update({Notification.is_read: True})
+    db.commit()
+    return {"message": "All marked as read"}
+
+
+@router.delete("/me/notifications/{notif_id}")
+def delete_notification(notif_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    notif = db.query(Notification).filter(Notification.id == notif_id, Notification.user_id == current_user.id).first()
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    db.delete(notif)
+    db.commit()
+    return {"message": "Notification deleted"}
+
+
 @router.post("/me/avatar")
 async def upload_avatar(
     file: UploadFile = File(...),

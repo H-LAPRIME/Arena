@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState, useRef } from "react";
 import { usersApi, getAvatarUrl } from "@/lib/api";
-import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon } from "@/components/Icons";
+import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon, TrashIcon } from "@/components/Icons";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: <GridIcon /> },
@@ -35,6 +35,12 @@ export default function NavbarWrapper() {
   }, [user]);
 
   useEffect(() => {
+    if (isNotifOpen && unreadCount > 0) {
+      handleReadAll();
+    }
+  }, [isNotifOpen]);
+
+  useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setIsNotifOpen(false);
@@ -55,6 +61,21 @@ export default function NavbarWrapper() {
     try {
       await usersApi.markNotificationRead(id);
       setNotifs(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch { /* Silent fail */ }
+  }
+
+  async function handleReadAll() {
+    try {
+      await usersApi.markAllNotificationsRead();
+      setNotifs(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch { /* Silent fail */ }
+  }
+
+  async function handleDeleteNotif(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    try {
+      await usersApi.deleteNotification(id);
+      setNotifs(prev => prev.filter(n => n.id !== id));
     } catch { /* Silent fail */ }
   }
 
@@ -110,9 +131,17 @@ export default function NavbarWrapper() {
                         key={n.id} 
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
+                        style={{ position: "relative" }}
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
+                        <button 
+                          className="notif-delete-btn"
+                          onClick={(e) => handleDeleteNotif(e, n.id)}
+                          title="Delete"
+                        >
+                          <TrashIcon />
+                        </button>
                       </div>
                     ))
                   )}
@@ -197,12 +226,20 @@ export default function NavbarWrapper() {
                         key={n.id} 
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
+                        style={{ position: "relative" }}
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
                         <div className="notif-item-time">
                           {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
+                        <button 
+                          className="notif-delete-btn"
+                          onClick={(e) => handleDeleteNotif(e, n.id)}
+                          title="Delete"
+                        >
+                          <TrashIcon />
+                        </button>
                       </div>
                     ))
                   )}

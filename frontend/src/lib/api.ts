@@ -74,6 +74,8 @@ export const usersApi = {
   },
   getNotifications: () => apiFetch("/api/users/me/notifications"),
   markNotificationRead: (id: string) => apiFetch(`/api/users/me/notifications/${id}/read`, { method: "PUT" }),
+  markAllNotificationsRead: () => apiFetch("/api/users/me/notifications/read-all", { method: "PUT" }),
+  deleteNotification: (id: string) => apiFetch(`/api/users/me/notifications/${id}`, { method: "DELETE" }),
   updateProfile: (data: { username?: string; password?: string; old_password?: string }) =>
     apiFetch("/api/users/me", { method: "PUT", body: JSON.stringify(data) }),
   updateAvatar: (file: File) => {
