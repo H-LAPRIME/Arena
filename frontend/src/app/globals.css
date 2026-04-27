@@ -452,10 +452,10 @@ body {
 }
 .match-card .match-card-bg-icon {
   position: absolute;
-  right: -20px;
+  right: 10px;
   top: 50%;
-  width: 140px;
-  height: 140px;
+  width: 170px;
+  height: 170px;
   opacity: 0.05;
   pointer-events: none;
   z-index: 0;
