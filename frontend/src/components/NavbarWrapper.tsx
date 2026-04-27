@@ -85,7 +85,7 @@ export default function NavbarWrapper() {
           <span className="navbar-brand-text">EFOOTBALL ARENA</span>
         </Link>
 
-        <div className="mobile-header-actions">
+        <div className="mobile-header-actions mobile-only-flex">
           <div className="notif-wrapper" ref={notifRef} style={{ position: "relative" }}>
             <button 
               className={`notif-bell ${unreadCount > 0 ? "has-unread" : ""}`}

@@ -164,6 +164,12 @@ body {
   .mobile-only-link { display: block; }
   .desktop-only { display: none !important; }
 }
+
+.mobile-only { display: none !important; }
+@media (max-width: 768px) {
+  .mobile-only { display: block !important; }
+  .mobile-only-flex { display: flex !important; }
+}
 .navbar-right { display: flex; align-items: center; gap: 10px; }
 .user-badge {
   display: flex; align-items: center; gap: 8px;
