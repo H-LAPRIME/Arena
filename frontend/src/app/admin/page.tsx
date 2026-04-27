@@ -384,6 +384,16 @@ export default function AdminPage() {
                 <option value="user">User</option>
                 <option value="admin">Administrator</option>
               </select>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", marginTop: "10px" }}>
+                <input 
+                  type="checkbox" 
+                  id="userActive" 
+                  checked={editingUser?.is_active !== false} 
+                  onChange={e => setEditingUser({ ...editingUser, is_active: e.target.checked })}
+                  style={{ width: "20px", height: "20px" }}
+                />
+                <label htmlFor="userActive" style={{ fontSize: "14px", fontWeight: 600 }}>Active Account</label>
+              </div>
               <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Save</button>
                 <button type="button" onClick={() => setIsUserModalOpen(false)} className="btn" style={{ flex: 1 }}>Cancel</button>
