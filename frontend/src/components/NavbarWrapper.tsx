@@ -71,18 +71,7 @@ export default function NavbarWrapper() {
     <nav className="navbar">
       <div className="navbar-inner">
         <Link href="/" className="navbar-brand">
-          <svg className="navbar-brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#2563eb" />
-                <stop offset="100%" stopColor="#3b82f6" />
-              </linearGradient>
-            </defs>
-            <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" strokeWidth="2" fill="none" />
-            <polygon points="12,10 22,16 12,22" fill="url(#logoGrad)" />
-            <circle cx="16" cy="16" r="3" fill="url(#logoGrad)" opacity="0.6" />
-          </svg>
-          <span className="navbar-brand-text">EFOOTBALL ARENA</span>
+          <img src="/logo_complet.png" alt="EFootball Arena Logo" className="navbar-brand-img" style={{ height: '40px', objectFit: 'contain' }} />
         </Link>
 
         <div className="mobile-header-actions mobile-only-flex">

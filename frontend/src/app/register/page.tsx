@@ -54,17 +54,7 @@ export default function RegisterPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-            <defs>
-              <linearGradient id="regLogoG" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#7c3aed"/>
-                <stop offset="100%" stopColor="#06b6d4"/>
-              </linearGradient>
-            </defs>
-            <circle cx="26" cy="26" r="24" stroke="url(#regLogoG)" strokeWidth="2" fill="rgba(124,58,237,0.08)"/>
-            <polygon points="20,17 36,26 20,35" fill="url(#regLogoG)"/>
-            <circle cx="26" cy="26" r="4" fill="url(#regLogoG)" opacity="0.5"/>
-          </svg>
+          <img src="/icon.png" alt="EFootball Arena Icon" width="64" height="64" style={{ objectFit: 'contain' }} />
         </div>
         <h1 className="auth-title">REGISTER</h1>
         <p className="auth-subtitle">
