@@ -34,6 +34,7 @@ export default function Home() {
     <main>
       {/* Hero */}
       <section className="hero">
+        <img src="/icon.png" alt="" className="hero-bg-icon" />
         <div className="hero-content">
           <h1>eFootball <span>Arena</span></h1>
           
