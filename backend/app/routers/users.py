@@ -54,26 +54,43 @@ def get_my_profile(current_user: User = Depends(get_current_user), db: Session =
 
 @router.get("", response_model=List[UserResponse])
 def list_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """List all active users (needed for match display)."""
-    users = db.query(User).filter(User.is_active == True).all()
+    """List active users. Admins see all; regular users only see those in their leagues."""
+    if current_user.role == "admin":
+        users = db.query(User).filter(User.is_active == True).all()
+    else:
+        # Get IDs of all leagues the current user is in
+        my_league_ids = db.query(LeagueMember.league_id).filter(LeagueMember.user_id == current_user.id).all()
+        my_league_ids = [lid for (lid,) in my_league_ids]
+        
+        # Get all users who share at least one of those leagues
+        users = (
+            db.query(User)
+            .join(LeagueMember, User.id == LeagueMember.user_id)
+            .filter(LeagueMember.league_id.in_(my_league_ids), User.is_active == True)
+            .distinct()
+            .all()
+        )
     return [UserResponse.model_validate(u) for u in users]
 
 
 @router.get("/grouped-by-league")
 def get_users_grouped_by_league(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Returns a list of leagues the user is in, each with its members."""
+    """Returns a list of leagues, each with its members. Admins see all; users see only theirs."""
     from app.models.league import League
     
-    # Get all leagues the current user is a member of
-    user_leagues = (
-        db.query(League)
-        .join(LeagueMember, League.id == LeagueMember.league_id)
-        .filter(LeagueMember.user_id == current_user.id)
-        .all()
-    )
+    if current_user.role == "admin":
+        leagues = db.query(League).all()
+    else:
+        # Get all leagues the current user is a member of
+        leagues = (
+            db.query(League)
+            .join(LeagueMember, League.id == LeagueMember.league_id)
+            .filter(LeagueMember.user_id == current_user.id)
+            .all()
+        )
     
     result = []
-    for league in user_leagues:
+    for league in leagues:
         members = (
             db.query(User)
             .join(LeagueMember, User.id == LeagueMember.user_id)
