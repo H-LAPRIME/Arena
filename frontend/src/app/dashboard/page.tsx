@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const [botMessage, setBotMessage] = useState("");
   const [viewingLeague, setViewingLeague] = useState<any>(null);
   const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
+  const [inviteUser, setInviteUser] = useState<any>(null);
+  const [inviteLeagueId, setInviteLeagueId] = useState("");
   const { user, isAdmin } = useAuth();
   const router = useRouter();
   const [dashboardLeagueFilter, setDashboardLeagueFilter] = useState("all");
@@ -87,19 +89,25 @@ export default function DashboardPage() {
     setSearching(false);
   }
 
-  async function handleInvite(userId: string, username: string) {
-    // Find a pending league owned by the user
-    const pendingLeague = myLeagues.find(l => l.status === "pending" && l.created_by === user?.id);
-    if (!pendingLeague) {
-      setMsg("error:You must have a pending league that you created to invite players.");
+  function handleInviteClick(userId: string, username: string) {
+    const ownedLeagues = myLeagues.filter(l => l.created_by === user?.id);
+    if (ownedLeagues.length === 0) {
+      setMsg("error:You must have a league that you created to invite players.");
       return;
     }
+    setInviteUser({ id: userId, username });
+    setInviteLeagueId(ownedLeagues[0].id);
+  }
 
+  async function confirmInvite() {
+    if (!inviteUser || !inviteLeagueId) return;
+    const lg = myLeagues.find(l => l.id === inviteLeagueId);
     try {
-      await leaguesApi.inviteMember(pendingLeague.id, userId);
-      setMsg(`success:Invitation envoyée à ${username} pour rejoindre ${pendingLeague.name} !`);
+      await leaguesApi.inviteMember(inviteLeagueId, inviteUser.id);
+      setMsg(`success:Invitation envoyée à ${inviteUser.username} pour rejoindre ${lg.name} !`);
       setSearchQuery("");
       setSearchResults([]);
+      setInviteUser(null);
       loadAll();
     } catch (err: any) {
       setMsg("error:" + err.message);
@@ -237,7 +245,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleInvite(p.id, p.username); }}
+                    onClick={(e) => { e.stopPropagation(); handleInviteClick(p.id, p.username); }}
                     className="btn btn-sm btn-green"
                     style={{ fontSize: "10px", padding: "4px 10px", flexShrink: 0 }}
                   >
@@ -616,6 +624,32 @@ export default function DashboardPage() {
       </div>
       
       {botMessage && <BotIntervention message={botMessage} onClose={() => setBotMessage("")} />}
+
+      {inviteUser && (
+        <div className="modal-overlay" onClick={() => setInviteUser(null)}>
+          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ width: "400px" }}>
+            <h2>Invite {inviteUser.username}</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "16px" }}>Which league would you like to invite this player to?</p>
+            <select 
+              value={inviteLeagueId} 
+              onChange={e => setInviteLeagueId(e.target.value)} 
+              style={{ 
+                width: "100%", padding: "12px", background: "rgba(0,0,0,0.03)", 
+                border: "1px solid var(--border)", borderRadius: "8px", color: "var(--text-primary)", 
+                marginBottom: "20px", outline: "none"
+              }}
+            >
+              {myLeagues.filter(l => l.created_by === user?.id).map(l => (
+                <option key={l.id} value={l.id}>{l.name} ({l.status})</option>
+              ))}
+            </select>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button className="btn btn-primary" onClick={confirmInvite} disabled={!inviteLeagueId} style={{ flex: 1 }}>Send Invite</button>
+              <button className="btn btn-secondary" onClick={() => setInviteUser(null)} style={{ flex: 1 }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
