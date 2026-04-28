@@ -95,7 +95,7 @@ export default function AdminPage() {
     }
     try {
       const members = await leaguesApi.getMembers(leagueId);
-      setLeagueMemberIds(new Set(members.map((m: any) => m.id)));
+      setLeagueMemberIds(new Set(members.map((m: any) => m.user_id)));
     } catch (e) {
       setLeagueMemberIds(new Set());
     }
