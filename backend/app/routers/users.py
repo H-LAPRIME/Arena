@@ -118,22 +118,23 @@ def get_users_grouped_by_league(current_user: User = Depends(get_current_user), 
             "members": [UserResponse.model_validate(m) for m in members]
         })
     
-    # Add "Unassigned" users (those not in any league)
-    all_users = db.query(User).filter(User.is_active == True).all()
-    assigned_user_ids = set()
-    for lg in result:
-        for m in lg["members"]:
-            assigned_user_ids.add(m.id)
-            
-    unassigned = [u for u in all_users if u.id not in assigned_user_ids]
-    if unassigned:
-        result.append({
-            "league_id": "unassigned",
-            "league_name": "Sans Ligue / Non Intégré",
-            "status": "none",
-            "created_by": None,
-            "members": [UserResponse.model_validate(u) for u in unassigned]
-        })
+    # Add "Unassigned" users (those not in any league) - Admins ONLY
+    if current_user.role == "admin":
+        all_users = db.query(User).filter(User.is_active == True).all()
+        assigned_user_ids = set()
+        for lg in result:
+            for m in lg["members"]:
+                assigned_user_ids.add(m.id)
+                
+        unassigned = [u for u in all_users if u.id not in assigned_user_ids]
+        if unassigned:
+            result.append({
+                "league_id": "unassigned",
+                "league_name": "Sans Ligue / Non Intégré",
+                "status": "none",
+                "created_by": None,
+                "members": [UserResponse.model_validate(u) for u in unassigned]
+            })
     
     return result
 
