@@ -409,11 +409,12 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {matches
-                  .filter((m: any) => 
-                    m.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                    m.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    m.league_id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
+                  .filter((m: any) => {
+                    const leagueName = seasons.find(s => s.id === m.league_id)?.name || "";
+                    return m.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           m.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           leagueName.toLowerCase().includes(searchTerm.toLowerCase());
+                  })
                   .map((m: any) => (
                   <tr key={m.id}>
                     <td>{m.league_id}</td>
