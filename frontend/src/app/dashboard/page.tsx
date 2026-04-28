@@ -28,6 +28,8 @@ export default function DashboardPage() {
   const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
   const { user, isAdmin } = useAuth();
   const router = useRouter();
+  const [dashboardLeagueFilter, setDashboardLeagueFilter] = useState("all");
+  const [expandedLeagues, setExpandedLeagues] = useState<Record<string, boolean>>({});
 
   useEffect(() => { loadAll(); }, []);
 
@@ -507,63 +509,109 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Players List Grouped by League */}
       <div className="card" style={{ marginTop: "24px" }}>
         <div className="card-bg-watermark"><UsersIcon /></div>
-        <div className="card-header">
+        <div className="card-header" style={{ flexWrap: "wrap", gap: "12px" }}>
           <span className="card-title"><UsersIcon /> Players Organization</span>
+          <select 
+            className="btn btn-sm" 
+            style={{ background: "var(--bg-dark)", color: "var(--text-primary)", border: "1px solid var(--border)", fontSize: "12px" }}
+            value={dashboardLeagueFilter}
+            onChange={(e) => setDashboardLeagueFilter(e.target.value)}
+          >
+            <option value="all">All My Leagues</option>
+            {groupedPlayers.map((l: any) => (
+              <option key={l.league_id} value={l.league_id}>{l.league_name}</option>
+            ))}
+          </select>
         </div>
         
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "12px" }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: "24px", 
+          padding: "12px", 
+          maxHeight: "600px", 
+          overflowY: "auto",
+          scrollbarWidth: "thin",
+          scrollbarColor: "var(--border) transparent"
+        }}>
           {groupedPlayers.length === 0 ? (
             <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px", fontSize: "14px" }}>You are not in any leagues yet.</p>
-          ) : groupedPlayers.map((league: any) => (
-            <div key={league.league_id}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "8px", borderBottom: "1px solid var(--border)" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--accent-light)", margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {league.league_name}
-                </h3>
-                <span style={{ fontSize: "11px", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "20px" }}>
-                  {league.members.length} players
-                </span>
-              </div>
-              <div className="grid-3">
-                {league.members.map((p: any) => (
-                  <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div className="stat-card" style={{
-                      cursor: "pointer",
-                      textAlign: "center",
-                      padding: "20px 16px",
-                      border: "1px solid var(--border)",
-                      boxShadow: "var(--shadow-xs)",
-                      transition: "box-shadow var(--ease-md), transform var(--ease-md), border-color var(--ease-md)"
-                    }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-md)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-strong)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-xs)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)"; }}
-                    >
-                      <div className="card-bg-watermark" style={{ fontSize: "40px", opacity: 0.04 }}><UsersIcon /></div>
-                      <div className="player-avatar" style={{ width: "44px", height: "44px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
-                        {p.avatar_url ? (
-                          <img
-                            src={getAvatarUrl(p.avatar_url) || ""}
-                            alt="Avatar"
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        ) : (
-                          p.username[0].toUpperCase()
-                        )}
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "4px" }}>{p.username}</div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
-                        <TrophyIcon /> {p.total_trophies || 0}
-                        {p.is_lord && <span title="Lord" style={{ color: "var(--gold)", display: "flex", marginLeft: "4px" }}><CrownIcon /></span>}
-                      </div>
+          ) : groupedPlayers
+            .filter((l: any) => dashboardLeagueFilter === "all" || l.league_id === dashboardLeagueFilter)
+            .map((league: any) => {
+              const isExpanded = expandedLeagues[league.league_id];
+              const displayedMembers = isExpanded ? league.members : league.members.slice(0, 6);
+              
+              return (
+                <div key={league.league_id}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "8px", borderBottom: "1px solid var(--border)" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--accent-light)", margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {league.league_name}
+                    </h3>
+                    <span style={{ fontSize: "11px", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "20px" }}>
+                      {league.members.length} players
+                    </span>
+                  </div>
+                  <div className="grid-3">
+                    {displayedMembers.map((p: any) => (
+                      <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
+                        <div className="stat-card" style={{
+                          cursor: "pointer",
+                          textAlign: "center",
+                          padding: "20px 16px",
+                          border: "1px solid var(--border)",
+                          boxShadow: "var(--shadow-xs)",
+                          transition: "box-shadow var(--ease-md), transform var(--ease-md), border-color var(--ease-md)"
+                        }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-md)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-strong)"; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-xs)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)"; }}
+                        >
+                          <div className="card-bg-watermark" style={{ fontSize: "40px", opacity: 0.04 }}><UsersIcon /></div>
+                          <div className="player-avatar" style={{ width: "44px", height: "44px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
+                            {p.avatar_url ? (
+                              <img
+                                src={getAvatarUrl(p.avatar_url) || ""}
+                                alt="Avatar"
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            ) : (
+                              p.username[0].toUpperCase()
+                            )}
+                          </div>
+                          <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "4px" }}>{p.username}</div>
+                          <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                            <TrophyIcon /> {p.total_trophies || 0}
+                            {p.is_lord && <span title="Lord" style={{ color: "var(--gold)", display: "flex", marginLeft: "4px" }}><CrownIcon /></span>}
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                  {!isExpanded && league.members.length > 6 && (
+                    <div style={{ textAlign: "center", marginTop: "16px" }}>
+                      <button 
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => setExpandedLeagues(prev => ({ ...prev, [league.league_id]: true }))}
+                      >
+                        See more ({league.members.length - 6} more)
+                      </button>
                     </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))}
+                  )}
+                  {isExpanded && (
+                    <div style={{ textAlign: "center", marginTop: "16px" }}>
+                      <button 
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => setExpandedLeagues(prev => ({ ...prev, [league.league_id]: false }))}
+                      >
+                        Show less
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
       

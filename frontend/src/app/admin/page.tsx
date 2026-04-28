@@ -19,6 +19,9 @@ export default function AdminPage() {
   const [statusFilter, setStatusFilter] = useState("pending");
   const [noteMap, setNoteMap] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
+  const [userFilterLeague, setUserFilterLeague] = useState<string>("all");
+  const [userSortBy, setUserSortBy] = useState<"name" | "date">("name");
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
 
   // Modal States
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -49,6 +52,46 @@ export default function AdminPage() {
       setMatches(m);
       setSeasons(s);
     } catch (err: any) { setMsg("error:" + err.message); }
+  }
+
+  useEffect(() => {
+    let result = [...users];
+
+    // Filter by League
+    if (userFilterLeague !== "all") {
+      // Since users list doesn't have league info, we might need a different approach or fetch.
+      // But for now, we'll assume we can only sort the full list or we'd need to fetch members.
+      // If user selection is a specific league, we should ideally fetch its members.
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      if (userSortBy === "name") {
+        return a.username.localeCompare(b.username);
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    setFilteredUsers(result);
+  }, [users, userSortBy]);
+
+  async function handleLeagueFilterChange(leagueId: string) {
+    setUserFilterLeague(leagueId);
+    if (leagueId === "all") {
+      setFilteredUsers(users);
+      return;
+    }
+    try {
+      const members = await leaguesApi.getMembers(leagueId);
+      // Members only have basic info, we need to match with users list for full admin info if possible
+      // but usersApi.adminList() already gives us everyone.
+      // We'll filter the full users list by those who are in this league.
+      const memberIds = new Set(members.map((m: any) => m.id));
+      setFilteredUsers(users.filter(u => memberIds.has(u.id)));
+    } catch (e) {
+      setFilteredUsers([]);
+    }
   }
 
   // Claim actions
@@ -252,9 +295,31 @@ export default function AdminPage() {
       {/* Users Tab */}
       {tab === "users" && (
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0, flexWrap: "wrap", gap: "12px" }}>
             <span className="card-title">Players</span>
-            <button onClick={() => { setEditingUser({}); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+              <select 
+                className="btn btn-sm" 
+                style={{ background: "var(--bg-dark)", color: "var(--text-primary)", border: "1px solid var(--border)", fontSize: "12px" }}
+                value={userFilterLeague}
+                onChange={(e) => handleLeagueFilterChange(e.target.value)}
+              >
+                <option value="all">All Leagues</option>
+                {seasons.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+              <select 
+                className="btn btn-sm" 
+                style={{ background: "var(--bg-dark)", color: "var(--text-primary)", border: "1px solid var(--border)", fontSize: "12px" }}
+                value={userSortBy}
+                onChange={(e) => setUserSortBy(e.target.value as any)}
+              >
+                <option value="name">Sort: Name (A-Z)</option>
+                <option value="date">Sort: Newest First</option>
+              </select>
+              <button onClick={() => { setEditingUser({}); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
+            </div>
           </div>
           <div className="table-container admin-table-container">
             <table className="admin-table">
@@ -262,7 +327,7 @@ export default function AdminPage() {
                 <tr><th>Player</th><th>Email</th><th>Role</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                {users.map((u: any) => (
+                {filteredUsers.map((u: any) => (
                   <tr key={u.id}>
                     <td><span className="player-name">{u.username}</span> {!u.is_active && <span className="badge badge-danger">Inactive</span>}</td>
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
