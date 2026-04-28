@@ -93,7 +93,7 @@ export default function PlayersPage() {
                     background: "var(--bg-card)",
                     position: "relative"
                   }}>
-                    {isAdmin && (
+                    {(isAdmin || user?.id === league.created_by) && (
                       <button 
                         onClick={() => handleRemoveMember(league.league_id, p.id, p.username)}
                         style={{
@@ -106,7 +106,8 @@ export default function PlayersPage() {
                           borderRadius: "8px",
                           padding: "6px",
                           cursor: "pointer",
-                          transition: "all 0.2s"
+                          transition: "all 0.2s",
+                          display: p.id === league.created_by ? "none" : "block" // Cannot remove self/creator
                         }}
                         title="Retirer de la ligue"
                         className="delete-btn-hover"

@@ -101,6 +101,7 @@ def get_users_grouped_by_league(current_user: User = Depends(get_current_user), 
             "league_id": league.id,
             "league_name": league.name,
             "status": league.status,
+            "created_by": league.created_by,
             "members": [UserResponse.model_validate(m) for m in members]
         })
     

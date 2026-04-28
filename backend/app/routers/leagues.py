@@ -239,6 +239,48 @@ def quit_league(
     return {"message": "Successfully quit the league"}
 
 
+@router.delete("/{league_id}/members/{user_id}")
+def remove_member(
+    league_id: str,
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Remove a member from a league (Creator only)."""
+    league = db.query(League).filter(League.id == league_id).first()
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+        
+    if league.created_by != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the creator can remove members")
+        
+    if user_id == league.created_by:
+        raise HTTPException(status_code=400, detail="Creator cannot be removed. Delete the league instead.")
+        
+    membership = db.query(LeagueMember).filter(
+        LeagueMember.league_id == league_id,
+        LeagueMember.user_id == user_id
+    ).first()
+    
+    if not membership:
+        raise HTTPException(status_code=404, detail="Member not found in this league")
+        
+    # Delete related data for this user in this league
+    db.delete(membership)
+    db.query(Standing).filter(
+        Standing.league_id == league_id,
+        Standing.user_id == user_id
+    ).delete()
+    
+    db.query(Match).filter(
+        Match.league_id == league_id,
+        (Match.home_player_id == user_id) | (Match.away_player_id == user_id)
+    ).delete()
+    
+    db.commit()
+    return {"message": "Member successfully removed from the league"}
+
+
 @router.get("/my", response_model=list[LeagueResponse])
 def my_leagues(
     current_user: User = Depends(get_current_user),
