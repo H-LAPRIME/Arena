@@ -133,70 +133,108 @@ export default function DashboardPage() {
           <h1 className="page-title"><GridIcon /> Dashboard</h1>
           <p className="page-subtitle">Manage your matches and leagues</p>
         </div>
-        {/* Compact Player Search */}
-        <div style={{ position: "relative", minWidth: "240px", maxWidth: "320px", flex: "0 0 auto" }}>
-          <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "14px", pointerEvents: "none" }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Invite a player..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "9px 14px 9px 36px",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid var(--border)",
-              borderRadius: "10px",
-              color: "var(--text-primary)",
-              fontSize: "13px",
-              outline: "none",
-              transition: "border-color 0.2s"
+        {/* Premium Player Search */}
+        <div style={{ position: "relative", minWidth: "260px", maxWidth: "340px", flex: "0 0 auto" }}>
+          {/* Wrapper with glowing border on focus */}
+          <div style={{
+            position: "relative",
+            borderRadius: "12px",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+            backdropFilter: "blur(12px)",
+            transition: "box-shadow 0.3s, border-color 0.3s",
+          }}
+            onFocusCapture={e => {
+              const el = e.currentTarget as HTMLDivElement;
+              el.style.boxShadow = "0 0 0 2px rgba(37,99,235,0.4), 0 4px 24px rgba(0,0,0,0.3)";
+              el.style.borderColor = "rgba(37,99,235,0.6)";
             }}
-            onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
-            onBlur={(e) => e.target.style.borderColor = "var(--border)"}
-          />
-          {searching && (
-            <div style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }}>
-              <div className="spinner" style={{ width: "12px", height: "12px" }}></div>
-            </div>
-          )}
+            onBlurCapture={e => {
+              const el = e.currentTarget as HTMLDivElement;
+              el.style.boxShadow = "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)";
+              el.style.borderColor = "rgba(255,255,255,0.12)";
+            }}
+          >
+            {/* Search icon */}
+            <span style={{
+              position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)",
+              color: "var(--accent-light)", display: "flex", pointerEvents: "none", opacity: 0.8
+            }}>
+              <UsersIcon />
+            </span>
+            <input
+              type="text"
+              placeholder="Invite a player..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 38px 10px 40px",
+                background: "transparent",
+                border: "none",
+                borderRadius: "12px",
+                color: "var(--text-primary)",
+                fontSize: "13px",
+                outline: "none",
+                letterSpacing: "0.02em",
+              }}
+            />
+            {searching && (
+              <div style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)" }}>
+                <div className="spinner" style={{ width: "13px", height: "13px" }}></div>
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown results */}
           {searchResults.length > 0 && (
             <div style={{
               position: "absolute",
-              top: "calc(100% + 6px)",
+              top: "calc(100% + 8px)",
               right: 0,
               left: 0,
-              background: "var(--card-bg)",
-              border: "1px solid var(--border)",
-              borderRadius: "12px",
+              background: "linear-gradient(160deg, rgba(20,24,40,0.98), rgba(12,16,32,0.98))",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "14px",
               overflow: "hidden",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(37,99,235,0.15)",
+              backdropFilter: "blur(16px)",
               zIndex: 999
             }}>
+              <div style={{ padding: "8px 14px 6px", fontSize: "10px", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                Results
+              </div>
               {searchResults.map((p: any) => (
                 <div key={p.id} style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   padding: "10px 14px",
-                  borderBottom: "1px solid var(--border)",
-                  transition: "background 0.15s"
+                  borderBottom: "1px solid rgba(255,255,255,0.04)",
+                  transition: "background 0.15s, padding-left 0.15s",
+                  cursor: "default"
                 }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(37,99,235,0.08)"; e.currentTarget.style.paddingLeft = "18px"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "14px"; }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div className="player-avatar" style={{ width: "28px", height: "28px", fontSize: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div className="player-avatar" style={{ width: "30px", height: "30px", fontSize: "12px", flexShrink: 0 }}>
                       {p.avatar_url ? (
                         <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : p.username[0].toUpperCase()}
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: "13px" }}>{p.username}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "13px", color: "var(--text-primary)" }}>{p.username}</div>
+                      <div style={{ fontSize: "10px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>
+                        <TrophyIcon /> {p.total_trophies || 0} trophies
+                      </div>
+                    </div>
                   </div>
                   <button
                     onClick={() => handleInvite(p.id, p.username)}
                     className="btn btn-sm btn-green"
-                    style={{ fontSize: "10px", padding: "4px 10px" }}
+                    style={{ fontSize: "10px", padding: "4px 10px", flexShrink: 0 }}
                   >
                     <PlusIcon /> Invite
                   </button>
