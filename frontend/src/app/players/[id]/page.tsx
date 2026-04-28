@@ -24,27 +24,36 @@ export default function PlayerDetailPage() {
   return (
     <div className="page-container">
       {/* Profile Header Card */}
-      <div className="card" style={{ textAlign: "center", marginBottom: "32px", position: "relative", overflow: "hidden", padding: "40px 20px" }}>
-        <div className="card-bg-watermark" style={{ fontSize: "150px", opacity: 0.02 }}><UsersIcon /></div>
+      <div className="card" style={{ 
+        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap-reverse", gap: "20px",
+        marginBottom: "32px", position: "relative", overflow: "hidden", padding: "40px 30px" 
+      }}>
+        <div className="card-bg-watermark" style={{ fontSize: "200px", opacity: 0.02, right: "-20px", top: "-20px" }}><UsersIcon /></div>
+        
+        {/* Left Side: Name and Badges */}
+        <div style={{ flex: 1, textAlign: "left", position: "relative", zIndex: 1 }}>
+          <h1 className="page-title" style={{ fontSize: "42px", marginBottom: "8px", lineHeight: "1.1", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>{player.username}</h1>
+          {player.is_lord && <div className="lord-badge" style={{ display: "inline-flex", marginBottom: "16px", fontSize: "14px" }}>🏆 LORD OF THE GAME</div>}
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
+            {(player.badges || []).map((b: any) => (
+              <span key={b.id} className="badge" style={{ padding: "6px 12px", fontSize: "13px" }}>{b.icon} {b.badge_name}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Side: Avatar */}
         <div className="player-avatar" style={{ 
-          width: "120px", height: "120px", fontSize: "48px", margin: "0 auto 20px",
+          width: "160px", height: "160px", fontSize: "64px", flexShrink: 0,
           background: player.is_lord ? "var(--gradient-gold)" : "var(--gradient-green)", 
-          overflow: "hidden",
-          border: player.is_lord ? "3px solid var(--gold)" : "3px solid transparent",
-          boxShadow: player.is_lord ? "0 0 20px rgba(255, 215, 0, 0.4)" : "var(--shadow-md)"
+          overflow: "hidden", position: "relative", zIndex: 1,
+          border: player.is_lord ? "4px solid var(--gold)" : "4px solid transparent",
+          boxShadow: player.is_lord ? "0 0 30px rgba(255, 215, 0, 0.5)" : "0 8px 24px rgba(0,0,0,0.4)"
         }}>
           {player.avatar_url ? (
             <img src={getAvatarUrl(player.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
             player.username[0].toUpperCase()
           )}
-        </div>
-        <h1 className="page-title" style={{ fontSize: "28px", marginBottom: "8px" }}>{player.username}</h1>
-        {player.is_lord && <div className="lord-badge" style={{ display: "inline-flex", margin: "0 auto 16px" }}>🏆 LORD OF THE GAME</div>}
-        <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "12px", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
-          {(player.badges || []).map((b: any) => (
-            <span key={b.id} className="badge" style={{ padding: "6px 12px", fontSize: "12px" }}>{b.icon} {b.badge_name}</span>
-          ))}
         </div>
       </div>
 
