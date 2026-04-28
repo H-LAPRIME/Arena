@@ -419,7 +419,9 @@ export default function DashboardPage() {
         <div className="card-bg-watermark"><UsersIcon /></div>
         <div className="card-header">
           <span className="card-title"><UsersIcon /> Players</span>
-          <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>
+          {user?.role === "admin" && (
+            <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>
+          )}
         </div>
         <div className="grid-3">
           {players.map((p: any) => (
