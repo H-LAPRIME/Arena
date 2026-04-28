@@ -138,25 +138,44 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Player Search Bar */}
-      <div className="card" style={{ marginBottom: "32px", padding: "20px", background: "var(--gradient-dark)", border: "1px solid var(--accent)" }}>
+      {/* Global Player Search Section */}
+      <div className="card" style={{ 
+        marginBottom: "32px", 
+        padding: "28px", 
+        background: "var(--gradient-dark)", 
+        border: "2px solid var(--accent)",
+        boxShadow: "0 10px 40px rgba(37, 99, 235, 0.15)"
+      }}>
+        <div style={{ marginBottom: "16px" }}>
+          <h2 style={{ fontSize: "18px", color: "white", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
+            <UsersIcon /> Recherche Globale de Joueurs
+          </h2>
+          <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", marginTop: "4px" }}>
+            Trouvez des joueurs par nom et invitez-les dans vos ligues en attente.
+          </p>
+        </div>
+
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <div style={{ flex: 1, position: "relative" }}>
+            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "18px" }}>🔍</span>
             <input 
               type="text" 
-              placeholder="Search players by name to invite..." 
+              placeholder="Ex: 'Mouad', 'Adam'..." 
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               style={{
                 width: "100%",
-                padding: "14px 20px",
-                background: "rgba(0,0,0,0.2)",
-                border: "1px solid var(--border)",
+                padding: "14px 20px 14px 48px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: "12px",
-                color: "var(--text-primary)",
+                color: "white",
                 fontSize: "15px",
-                outline: "none"
+                outline: "none",
+                transition: "all 0.3s"
               }}
+              onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
             />
             {searching && (
               <div style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)" }}>
@@ -164,7 +183,9 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <button className="btn btn-primary" style={{ padding: "14px 24px" }}><UsersIcon /> Search</button>
+          <button className="btn btn-primary" style={{ padding: "14px 32px", borderRadius: "12px" }}>
+            RECHERCHER
+          </button>
         </div>
 
         {searchResults.length > 0 && (
