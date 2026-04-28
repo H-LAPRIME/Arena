@@ -300,11 +300,11 @@ body {
 }
 .card-bg-watermark {
   position: absolute;
-  right: -10px;
-  top: 50%;
-  transform: translateY(-50%) rotate(-15deg);
-  width: 130px;
-  height: 130px;
+  right: 10px;
+  bottom: -20px;
+  width: 180px;
+  height: 180px;
+  transform: rotate(-15deg);
   opacity: 0.04;
   pointer-events: none;
   z-index: 0;
@@ -318,8 +318,8 @@ body {
   width: 100%;
   height: 100%;
 }
-.card:hover .card-bg-watermark, .stat-card:hover .card-bg-watermark {
-  transform: translateY(-50%) rotate(-25deg) scale(1.1);
+.card:hover .card-bg-watermark, .stat-card:hover .card-bg-watermark, .chat-container:hover .card-bg-watermark {
+  transform: rotate(-25deg) scale(1.1);
   color: var(--accent);
 }
 .card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
