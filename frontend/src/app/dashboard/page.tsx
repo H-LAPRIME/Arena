@@ -16,6 +16,9 @@ export default function DashboardPage() {
   const [activeLeague, setActiveLeague] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [botMessage, setBotMessage] = useState("");
   const [viewingLeague, setViewingLeague] = useState<any>(null);
@@ -52,6 +55,39 @@ export default function DashboardPage() {
       }
     } catch (e) { /* API not ready */ }
     setLoading(false);
+  }
+
+  async function handleSearch(q: string) {
+    setSearchQuery(q);
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const results = await usersApi.search(q);
+      setSearchResults(results);
+    } catch (e) {}
+    setSearching(false);
+  }
+
+  async function handleInvite(userId: string, username: string) {
+    // Find a pending league owned by the user
+    const pendingLeague = myLeagues.find(l => l.status === "pending" && l.created_by === user?.id);
+    if (!pendingLeague) {
+      setMsg("error:You must have a pending league that you created to invite players.");
+      return;
+    }
+
+    try {
+      await leaguesApi.addMember(pendingLeague.id, userId);
+      setMsg(`success:${username} has been invited to ${pendingLeague.name}!`);
+      setSearchQuery("");
+      setSearchResults([]);
+      loadAll();
+    } catch (err: any) {
+      setMsg("error:" + err.message);
+    }
   }
 
   async function handleJoinLeague(e: React.FormEvent) {
@@ -94,6 +130,74 @@ export default function DashboardPage() {
           {msg.replace(/^(success:|error:)/, "")}
         </div>
       )}
+
+      {/* Player Search Bar */}
+      <div className="card" style={{ marginBottom: "32px", padding: "20px", background: "var(--gradient-dark)", border: "1px solid var(--accent)" }}>
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <div style={{ flex: 1, position: "relative" }}>
+            <input 
+              type="text" 
+              placeholder="Search players by name to invite..." 
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "14px 20px",
+                background: "rgba(0,0,0,0.2)",
+                border: "1px solid var(--border)",
+                borderRadius: "12px",
+                color: "var(--text-primary)",
+                fontSize: "15px",
+                outline: "none"
+              }}
+            />
+            {searching && (
+              <div style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)" }}>
+                <div className="spinner" style={{ width: "16px", height: "16px" }}></div>
+              </div>
+            )}
+          </div>
+          <button className="btn btn-primary" style={{ padding: "14px 24px" }}><UsersIcon /> Search</button>
+        </div>
+
+        {searchResults.length > 0 && (
+          <div style={{ 
+            marginTop: "16px", 
+            background: "rgba(0,0,0,0.3)", 
+            borderRadius: "12px", 
+            overflow: "hidden",
+            border: "1px solid var(--border)" 
+          }}>
+            {searchResults.map((p: any) => (
+              <div key={p.id} style={{ 
+                display: "flex", 
+                justifyContent: "space-between", 
+                alignItems: "center", 
+                padding: "12px 20px",
+                borderBottom: "1px solid rgba(255,255,255,0.05)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="player-avatar" style={{ width: "32px", height: "32px", fontSize: "14px" }}>
+                    {p.avatar_url ? (
+                      <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      p.username[0].toUpperCase()
+                    )}
+                  </div>
+                  <span style={{ fontWeight: 600 }}>{p.username}</span>
+                </div>
+                <button 
+                  onClick={() => handleInvite(p.id, p.username)}
+                  className="btn btn-sm btn-green"
+                  style={{ fontSize: "11px", padding: "6px 12px" }}
+                >
+                  <PlusIcon /> Invite to League
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Quick Stats */}
       <div className="stat-grid" style={{ marginBottom: "32px" }}>

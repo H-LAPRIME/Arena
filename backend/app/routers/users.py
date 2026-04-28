@@ -73,6 +73,19 @@ def list_users(current_user: User = Depends(get_current_user), db: Session = Dep
     return [UserResponse.model_validate(u) for u in users]
 
 
+@router.get("/search", response_model=List[UserResponse])
+def search_users(q: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Search for users by username (Global search for invitations)."""
+    if len(q) < 2:
+        return []
+    users = db.query(User).filter(
+        User.username.ilike(f"%{q}%"),
+        User.is_active == True,
+        User.id != current_user.id
+    ).limit(10).all()
+    return [UserResponse.model_validate(u) for u in users]
+
+
 @router.get("/grouped-by-league")
 def get_users_grouped_by_league(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Returns a list of leagues, each with its members. Admins see all; users see only theirs."""

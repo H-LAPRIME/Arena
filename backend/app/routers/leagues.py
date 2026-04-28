@@ -166,6 +166,52 @@ def delete_league(
     return {"message": "League deleted"}
 
 
+@router.post("/{league_id}/members/{user_id}")
+def add_member(
+    league_id: str,
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Directly add a member to a league (Creator or Admin only, pending leagues only)."""
+    league = db.query(League).filter(League.id == league_id).first()
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+        
+    if league.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only the creator or an admin can add members")
+        
+    if league.status != "pending":
+        raise HTTPException(status_code=400, detail="Cannot add members to a league that has already started")
+        
+    # Check if league is full
+    count = db.query(LeagueMember).filter(LeagueMember.league_id == league_id).count()
+    if count >= league.max_members:
+        raise HTTPException(status_code=400, detail="League is full")
+
+    existing = db.query(LeagueMember).filter(
+        LeagueMember.league_id == league_id,
+        LeagueMember.user_id == user_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="User is already a member of this league")
+
+    import uuid
+    db.add(LeagueMember(
+        id=str(uuid.uuid4()),
+        league_id=league.id,
+        user_id=user_id,
+    ))
+    # Initial standing
+    db.add(Standing(
+        id=str(uuid.uuid4()),
+        league_id=league.id,
+        user_id=user_id,
+    ))
+    db.commit()
+    return {"message": "Member successfully added to the league"}
+
+
 @router.post("/join", response_model=LeagueResponse)
 def join_league(
     body: LeagueJoin,
@@ -255,13 +301,13 @@ def remove_member(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Remove a member from a league (Creator only)."""
+    """Remove a member from a league (Creator or Admin only)."""
     league = db.query(League).filter(League.id == league_id).first()
     if not league:
         raise HTTPException(status_code=404, detail="League not found")
         
-    if league.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="Only the creator can remove members")
+    if league.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only the creator or an admin can remove members")
         
     if user_id == league.created_by:
         raise HTTPException(status_code=400, detail="Creator cannot be removed. Delete the league instead.")

@@ -64,6 +64,7 @@ export const usersApi = {
   getGroupedByLeague: () => apiFetch("/api/users/grouped-by-league"),
   adminList: () => apiFetch("/api/admin/users"),
   getOne: (id: string) => apiFetch(`/api/users/${id}`),
+  search: (q: string) => apiFetch(`/api/users/search?q=${q}`),
   update: (id: string, data: Record<string, any>) =>
     apiFetch(`/api/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   adminCreate: (data: Record<string, any>) =>
@@ -106,6 +107,7 @@ export const leaguesApi = {
   getStandingAdvice: (id: string) => apiFetch(`/api/leagues/${id}/standing-advice`),
   getH2HAdvice: (id: string, opponentId: string) => apiFetch(`/api/leagues/${id}/h2h-advice/${opponentId}`),
   getMatchAdvice: (matchId: string) => apiFetch(`/api/leagues/match-advice/${matchId}`),
+  addMember: (leagueId: string, userId: string) => apiFetch(`/api/leagues/${leagueId}/members/${userId}`, { method: "POST" }),
   quit: (id: string) => apiFetch(`/api/leagues/${id}/quit`, { method: "DELETE" }),
   removeMember: (leagueId: string, userId: string) => apiFetch(`/api/admin/leagues/${leagueId}/members/${userId}`, { method: "DELETE" }),
 };
