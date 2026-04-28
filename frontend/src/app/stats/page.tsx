@@ -46,6 +46,7 @@ export default function StatsPage() {
       {records && (
         <div className="grid-2" style={{ marginBottom: "32px" }}>
           <div className="card">
+            <div className="card-bg-watermark"><ZapIcon /></div>
             <div className="card-header"><span className="card-title"><ZapIcon /> Biggest Win</span></div>
             {records.biggest_win ? (
               <div style={{ textAlign: "center", padding: "16px" }}>
@@ -59,6 +60,7 @@ export default function StatsPage() {
             ) : <p style={{ color: "var(--text-muted)", textAlign: "center" }}>No matches yet</p>}
           </div>
           <div className="card">
+            <div className="card-bg-watermark"><ChartIcon /></div>
             <div className="card-header"><span className="card-title"><ZapIcon /> Highest Scoring Match</span></div>
             {records.highest_scoring_match ? (
               <div style={{ textAlign: "center", padding: "16px" }}>
@@ -77,6 +79,7 @@ export default function StatsPage() {
       {/* Player Rankings */}
       {records?.player_stats && (
         <div className="card" style={{ marginBottom: "32px", padding: 0, overflow: "hidden" }}>
+          <div className="card-bg-watermark"><TrophyIcon /></div>
           <div className="card-header" style={{ padding: "24px 24px 0 24px" }}><span className="card-title"><TrophyIcon /> Global Ranking (All Seasons)</span></div>
           <div className="table-container">
             <table className="scoreboard">
@@ -109,6 +112,7 @@ export default function StatsPage() {
 
       {/* Head-to-Head */}
       <div className="card">
+        <div className="card-bg-watermark"><SwordIcon /></div>
         <div className="card-header"><span className="card-title"><SwordIcon /> Head-to-Head</span></div>
         <div style={{ display: "flex", gap: "12px", alignItems: "end", marginBottom: "20px", flexWrap: "wrap" }}>
           <div className="form-group" style={{ marginBottom: 0, flex: 1, minWidth: "150px" }}>

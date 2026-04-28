@@ -96,18 +96,22 @@ export default function DashboardPage() {
       {/* Quick Stats */}
       <div className="stat-grid" style={{ marginBottom: "32px" }}>
         <div className="stat-card">
+          <div className="card-bg-watermark"><UsersIcon /></div>
           <div className="stat-value gold">{players.length}</div>
           <div className="stat-label">Registered Players</div>
         </div>
         <div className="stat-card">
+          <div className="card-bg-watermark"><GridIcon /></div>
           <div className="stat-value green">{leagues.length}</div>
           <div className="stat-label">Total Leagues</div>
         </div>
         <div className="stat-card">
+          <div className="card-bg-watermark"><GamepadIcon /></div>
           <div className="stat-value blue">{matches.filter((m: any) => m.status === "played").length}/{matches.length || 12}</div>
           <div className="stat-label">Matches Played</div>
         </div>
         <div className="stat-card">
+          <div className="card-bg-watermark"><TrophyIcon /></div>
           <div className="stat-value">{activeLeague ? activeLeague.name : "—"}</div>
           <div className="stat-label">Active League</div>
         </div>
@@ -116,6 +120,7 @@ export default function DashboardPage() {
       <div className="grid-2">
         {/* Next Match */}
         <div className="card">
+          <div className="card-bg-watermark"><ZapIcon /></div>
           <div className="card-header">
             <span className="card-title"><ZapIcon /> Next Match</span>
           </div>
@@ -166,6 +171,7 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="card">
+          <div className="card-bg-watermark"><PlusIcon /></div>
           <div className="card-header">
             <span className="card-title"><TrophyIcon /> Join a League</span>
           </div>
@@ -198,6 +204,7 @@ export default function DashboardPage() {
 
       {/* My Leagues (Moved outside grid-2 for full width) */}
       <div className="card" style={{ marginTop: "24px" }}>
+        <div className="card-bg-watermark"><TrophyIcon /></div>
         <div className="card-header">
           <span className="card-title"><TrophyIcon /> My Leagues</span>
         </div>
@@ -303,6 +310,7 @@ export default function DashboardPage() {
 
       {/* Players List */}
       <div className="card" style={{ marginTop: "24px" }}>
+        <div className="card-bg-watermark"><UsersIcon /></div>
         <div className="card-header">
           <span className="card-title"><UsersIcon /> Players</span>
           <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>

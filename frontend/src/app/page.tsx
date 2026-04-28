@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
+import { UsersIcon, TrophyIcon, SwordIcon, GridIcon } from "@/components/Icons";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
@@ -54,18 +55,22 @@ export default function Home() {
         {/* Quick Stats */}
         <div className="stat-grid" style={{ marginBottom: "32px" }}>
           <div className="stat-card">
+            <div className="card-bg-watermark"><UsersIcon /></div>
             <div className="stat-value gold">{players.length}</div>
             <div className="stat-label">Players</div>
           </div>
           <div className="stat-card">
+            <div className="card-bg-watermark"><TrophyIcon /></div>
             <div className="stat-value blue">{activeLeague?.name || "—"}</div>
             <div className="stat-label">Active League</div>
           </div>
           <div className="stat-card">
+            <div className="card-bg-watermark"><SwordIcon /></div>
             <div className="stat-value accent">12</div>
             <div className="stat-label">Matches / League</div>
           </div>
           <div className="stat-card">
+            <div className="card-bg-watermark"><GridIcon /></div>
             <div className="stat-value green">3</div>
             <div className="stat-label">Titles = Lord</div>
           </div>

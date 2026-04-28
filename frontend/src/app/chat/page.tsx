@@ -77,6 +77,7 @@ export default function ChatPage() {
       </div>
 
       <div className="chat-container">
+        <div className="card-bg-watermark" style={{ opacity: 0.1 }}><BotIcon /></div>
         <div className="chat-messages">
           {messages.length === 0 && (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>

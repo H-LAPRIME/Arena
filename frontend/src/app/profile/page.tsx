@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { statsApi, usersApi, leaguesApi, certificatesApi } from "@/lib/api";
 import Link from "next/link";
-import { ChartIcon, TrophyIcon, ShieldIcon, GamepadIcon, SettingsIcon } from "@/components/Icons";
+import { ChartIcon, TrophyIcon, ShieldIcon, GamepadIcon, SettingsIcon, UsersIcon } from "@/components/Icons";
 import Cropper from "react-easy-crop";
 
 export default function ProfilePage() {
@@ -140,6 +140,7 @@ export default function ProfilePage() {
     <div className="page-container" style={{ maxWidth: "1400px" }}>
       {/* 1. HERO SECTION: Profile Header */}
       <div className="card" style={{ padding: "40px", textAlign: "center", marginBottom: "32px", position: "relative", overflow: "hidden", borderRadius: "var(--radius-lg)" }}>
+        <div className="card-bg-watermark"><UsersIcon /></div>
         <div style={{ 
           position: "absolute", top: 0, left: 0, width: "100%", height: "100%", 
           background: user.is_lord ? "var(--gradient-gold)" : "var(--gradient-blue)", 
@@ -211,6 +212,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="card">
+                <div className="card-bg-watermark"><ChartIcon /></div>
                 <div className="card-header"><span className="card-title">Season Totals</span></div>
                 <div style={{ padding: "20px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
@@ -258,6 +260,7 @@ export default function ProfilePage() {
             {/* Lord Certificate Card */}
             {user.is_lord ? (
               <div className="card certificate-card gold" style={{ background: "rgba(212, 175, 55, 0.05)", border: "1px solid var(--gold)" }}>
+                <div className="card-bg-watermark"><TrophyIcon /></div>
                 <div style={{ padding: "24px" }}>
                   <div style={{ fontSize: "32px", color: "var(--gold)", marginBottom: "16px" }}><TrophyIcon /></div>
                   <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "8px" }}>Lord of the Arena</h3>
@@ -267,6 +270,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="card" style={{ padding: "24px", textAlign: "center", border: "1px dashed var(--border)", opacity: 0.6 }}>
+                <div className="card-bg-watermark"><TrophyIcon /></div>
                 <div style={{ fontSize: "32px", color: "var(--text-muted)", marginBottom: "12px" }}><TrophyIcon /></div>
                 <p style={{ fontSize: "14px", fontWeight: 700 }}>Lord Status Locked</p>
                 <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Win 3 titles to unlock</p>
@@ -275,6 +279,7 @@ export default function ProfilePage() {
 
             {/* Latest Achievement or Static Info */}
             <div className="card" style={{ padding: "24px" }}>
+               <div className="card-bg-watermark"><ShieldIcon /></div>
                <div style={{ fontSize: "32px", color: "var(--accent)", marginBottom: "16px" }}><ShieldIcon /></div>
                <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "8px" }}>Verified Athlete</h3>
                <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "20px" }}>You are a verified member of the eFootball Arena.</p>
@@ -283,6 +288,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="card">
+            <div className="card-bg-watermark"><TrophyIcon /></div>
             <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span className="card-title">Season Reports & Badges</span>
               <span className="badge">{myLeagues.length} Leagues</span>
