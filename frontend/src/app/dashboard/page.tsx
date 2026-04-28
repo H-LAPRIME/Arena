@@ -141,18 +141,18 @@ export default function DashboardPage() {
             borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
             border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+            boxShadow: "var(--shadow-xs)",
             backdropFilter: "blur(12px)",
             transition: "box-shadow 0.3s, border-color 0.3s",
           }}
             onFocusCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 0 0 2px rgba(37,99,235,0.25), 0 2px 12px rgba(0,0,0,0.2)";
+              el.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.12), var(--shadow-xs)";
               el.style.borderColor = "rgba(37,99,235,0.6)";
             }}
             onBlurCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 2px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)";
+              el.style.boxShadow = "var(--shadow-xs)";
               el.style.borderColor = "rgba(255,255,255,0.12)";
             }}
           >
@@ -198,7 +198,7 @@ export default function DashboardPage() {
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "14px",
               overflow: "hidden",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(37,99,235,0.1)",
+              boxShadow: "var(--shadow-sm)",
               backdropFilter: "blur(16px)",
               zIndex: 999
             }}>
@@ -531,12 +531,12 @@ export default function DashboardPage() {
                       cursor: "pointer",
                       textAlign: "center",
                       padding: "20px 16px",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
-                      transition: "box-shadow 0.2s, transform 0.2s"
+                      border: "1px solid var(--border)",
+                      boxShadow: "var(--shadow-xs)",
+                      transition: "box-shadow var(--ease-md), transform var(--ease-md), border-color var(--ease-md)"
                     }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-md)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border-strong)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--shadow-xs)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)"; }}
                     >
                       <div className="card-bg-watermark" style={{ fontSize: "40px", opacity: 0.04 }}><UsersIcon /></div>
                       <div className="player-avatar" style={{ width: "44px", height: "44px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
