@@ -71,7 +71,7 @@ export default function NavbarWrapper() {
     <nav className="navbar">
       <div className="navbar-inner">
         <Link href="/" className="navbar-brand">
-          <img src="/logo_complet.png" alt="EFootball Arena Logo" className="navbar-brand-img" style={{ height: '52px', objectFit: 'contain' }} />
+          <img src="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/logo_complet.png" alt="EFootball Arena Logo" className="navbar-brand-img" style={{ height: '52px', objectFit: 'contain' }} />
         </Link>
 
         <div className="mobile-header-actions mobile-only-flex">

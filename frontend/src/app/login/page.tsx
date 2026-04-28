@@ -42,7 +42,7 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <img src="/icon.png" alt="EFootball Arena Icon" width="84" height="84" style={{ objectFit: 'contain' }} />
+          <img src="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/icon.png" alt="EFootball Arena Icon" width="84" height="84" style={{ objectFit: 'contain' }} />
         </div>
         <h1 className="auth-title">LOGIN</h1>
         <p className="auth-subtitle">Welcome to the arena</p>
