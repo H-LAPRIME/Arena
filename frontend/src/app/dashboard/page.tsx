@@ -219,13 +219,13 @@ export default function DashboardPage() {
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "14px"; }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div className="player-avatar" style={{ width: "30px", height: "30px", fontSize: "12px", flexShrink: 0 }}>
+                    <div className="player-avatar" style={{ width: "30px", height: "30px", fontSize: "12px", flexShrink: 0, overflow: "hidden", borderRadius: "50%" }}>
                       {p.avatar_url ? (
-                        <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
                       ) : p.username[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: "13px", color: "var(--text-primary)" }}>{p.username}</div>
+                      <div style={{ fontWeight: 700, fontSize: "13px", color: "#ffffff" }}>{p.username}</div>
                       <div style={{ fontSize: "10px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>
                         <TrophyIcon /> {p.total_trophies || 0} trophies
                       </div>
