@@ -4,8 +4,10 @@ Users can submit claims and view their own claims only.
 Admin claim management is in admin_leagues.py.
 """
 import os
+import uuid
 from datetime import datetime
 from typing import Optional, List
+from supabase import create_client, Client
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -75,13 +77,22 @@ async def submit_claim(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Screenshot must be under 10 MB")
 
-    upload_dir = settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
-    filename = f"{current_user.id}_{match_id}_{int(datetime.utcnow().timestamp())}{ext}"
-    filepath = os.path.join(upload_dir, filename)
-    with open(filepath, "wb") as f:
-        f.write(content)
-    screenshot_url = f"/uploads/{filename}"
+    # Upload to Supabase
+    try:
+        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+        filename = f"{current_user.id}_{match_id}_{uuid.uuid4().hex[:8]}{ext}"
+        
+        # Upload
+        supabase.storage.from_("claims").upload(
+            path=filename,
+            file=content,
+            file_options={"content-type": screenshot.content_type}
+        )
+        
+        # Public URL
+        screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
 
     # Determine result and points automatically
     is_home = (current_user.id == match.home_player_id)
@@ -171,23 +182,22 @@ async def update_claim_image(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Screenshot must be under 10 MB")
 
-    # Optional: try to delete old image
-    if claim.screenshot_url:
-        old_path = os.path.join(settings.UPLOAD_DIR, os.path.basename(claim.screenshot_url))
-        if os.path.exists(old_path):
-            try:
-                os.remove(old_path)
-            except Exception:
-                pass
-
-    upload_dir = settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
-    filename = f"{current_user.id}_{claim.match_id}_upd_{int(datetime.utcnow().timestamp())}{ext}"
-    filepath = os.path.join(upload_dir, filename)
-    with open(filepath, "wb") as f:
-        f.write(content)
-    
-    claim.screenshot_url = f"/uploads/{filename}"
+    # Upload to Supabase
+    try:
+        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+        filename = f"{current_user.id}_{claim.match_id}_upd_{uuid.uuid4().hex[:8]}{ext}"
+        
+        # Upload
+        supabase.storage.from_("claims").upload(
+            path=filename,
+            file=content,
+            file_options={"content-type": screenshot.content_type}
+        )
+        
+        # Public URL
+        claim.screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
     db.commit()
     db.refresh(claim)
     return _build_response(claim, db)
