@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("efootball_user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
-    router.replace("/dashboard");
+    router.replace("/");
   };
 
   const logout = () => {
