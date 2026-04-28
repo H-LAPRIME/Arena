@@ -29,6 +29,7 @@ from app.config import get_settings
 import shutil
 import os
 from fastapi import File, UploadFile
+import bcrypt
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -394,12 +395,11 @@ def create_user(data: UserUpdate, admin: User = Depends(require_admin), db: Sess
     # UserUpdate schema might not be perfect for creation (needs password)
     # But let's assume we use it or a similar one. 
     # Actually UserUpdate has Optional fields.
-    from app.routers.auth import pwd_context
     user = User(
         id=str(uuid.uuid4()),
         username=data.username,
         email=data.email,
-        hashed_password=pwd_context.hash("efootball2024"), # Default password
+        password_hash=bcrypt.hashpw("efootball2024".encode("utf-8"), bcrypt.gensalt()).decode("utf-8"), # Default password
         role=data.role or "user",
         is_active=True
     )
@@ -432,6 +432,13 @@ def update_user(user_id: str, data: UserUpdate, admin: User = Depends(require_ad
         user.role = data.role
     if data.is_active is not None:
         user.is_active = data.is_active
+    
+    # Password update support for admin
+    if data.password is not None and data.password.strip() != "":
+        if len(data.password) < 6:
+            raise HTTPException(status_code=400, detail="Password too short (min 6 characters)")
+        user.password_hash = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        
     db.commit()
     db.refresh(user)
     return UserResponse.model_validate(user)
