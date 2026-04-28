@@ -408,7 +408,40 @@ body {
   box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
 }
 .form-select { cursor: pointer; }
-.form-select option { background: var(--white); }
+
+/* ===== CUSTOM SELECT DROPDOWNS ===== */
+select.input-field, select.btn, select.form-select, .premium-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px !important;
+  cursor: pointer;
+}
+.premium-select {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  outline: none;
+  transition: all var(--ease);
+  box-shadow: var(--shadow-xs);
+}
+.premium-select:hover, .premium-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.1);
+}
+select option {
+  background-color: var(--white);
+  color: var(--text-primary);
+  font-weight: 500;
+  padding: 10px 14px;
+}
 
 /* ===== STAT CARDS ===== */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 16px; }

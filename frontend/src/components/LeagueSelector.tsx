@@ -57,16 +57,7 @@ export default function LeagueSelector({ onSelect, selectedId, autoSelectIfOnlyO
         <select 
           value={selectedId} 
           onChange={(e) => onSelect(e.target.value)}
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid var(--border)",
-            color: "var(--text-primary)",
-            padding: "4px 8px",
-            borderRadius: "8px",
-            fontSize: "13px",
-            cursor: "pointer",
-            outline: "none"
-          }}
+          className="premium-select"
         >
           {leagues.map(l => (
             <option key={l.id} value={l.id}>{l.name}</option>
