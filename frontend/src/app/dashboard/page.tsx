@@ -174,7 +174,7 @@ export default function DashboardPage() {
                 width: "100%",
                 padding: "10px 38px 10px 40px",
                 background: "transparent",
-                border: "white",
+                border: "none",
                 borderRadius: "12px",
                 color: "var(--text-primary)",
                 fontSize: "13px",

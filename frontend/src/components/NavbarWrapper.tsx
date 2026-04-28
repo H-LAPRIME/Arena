@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState, useRef } from "react";
 import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
-import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon } from "@/components/Icons";
+import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon, TrashIcon } from "@/components/Icons";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: <GridIcon /> },
@@ -58,6 +58,13 @@ export default function NavbarWrapper() {
     } catch { /* Silent fail */ }
   }
 
+  async function deleteNotif(id: string) {
+    try {
+      await usersApi.deleteNotification(id);
+      setNotifs(prev => prev.filter(n => n.id !== id));
+    } catch { /* Silent fail */ }
+  }
+
   const unreadCount = notifs.filter(n => !n.is_read).length;
 
   const publicPaths = ["/login", "/register"];
@@ -100,7 +107,16 @@ export default function NavbarWrapper() {
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
                       >
-                        <div className="notif-item-title">{n.title}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div className="notif-item-title">{n.title}</div>
+                          <button
+                            className="notif-delete-btn"
+                            onClick={(e) => { e.stopPropagation(); deleteNotif(n.id); }}
+                            title="Delete"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
                         <div className="notif-item-msg">{n.message}</div>
                         {n.notif_type === "invitation" && !n.is_read && (
                           <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
@@ -222,7 +238,16 @@ export default function NavbarWrapper() {
                         className={`notif-item ${n.is_read ? "read" : "unread"}`}
                         onClick={() => markAsRead(n.id)}
                       >
-                        <div className="notif-item-title">{n.title}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div className="notif-item-title">{n.title}</div>
+                          <button
+                            className="notif-delete-btn"
+                            onClick={(e) => { e.stopPropagation(); deleteNotif(n.id); }}
+                            title="Delete"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
                         <div className="notif-item-msg">{n.message}</div>
                         {n.notif_type === "invitation" && !n.is_read && (
                           <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
