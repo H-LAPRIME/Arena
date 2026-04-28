@@ -108,6 +108,9 @@ export const leaguesApi = {
   getH2HAdvice: (id: string, opponentId: string) => apiFetch(`/api/leagues/${id}/h2h-advice/${opponentId}`),
   getMatchAdvice: (matchId: string) => apiFetch(`/api/leagues/match-advice/${matchId}`),
   addMember: (leagueId: string, userId: string) => apiFetch(`/api/leagues/${leagueId}/members/${userId}`, { method: "POST" }),
+  inviteMember: (leagueId: string, userId: string) => apiFetch(`/api/leagues/${leagueId}/invite/${userId}`, { method: "POST" }),
+  acceptInvitation: (notifId: string) => apiFetch(`/api/leagues/accept-invitation/${notifId}`, { method: "POST" }),
+  rejectInvitation: (notifId: string) => apiFetch(`/api/leagues/reject-invitation/${notifId}`, { method: "POST" }),
   quit: (id: string) => apiFetch(`/api/leagues/${id}/quit`, { method: "DELETE" }),
   removeMember: (leagueId: string, userId: string) => apiFetch(`/api/admin/leagues/${leagueId}/members/${userId}`, { method: "DELETE" }),
 };

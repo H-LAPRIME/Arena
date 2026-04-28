@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState, useRef } from "react";
-import { usersApi, getAvatarUrl } from "@/lib/api";
+import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { GridIcon, TrophyIcon, SwordIcon, ShieldIcon, ChartIcon, BotIcon, AdminIcon, BellIcon, LogoutIcon, MenuIcon, XIcon } from "@/components/Icons";
 
 const navLinks = [
@@ -102,6 +102,41 @@ export default function NavbarWrapper() {
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
+                        {n.notif_type === "invitation" && !n.is_read && (
+                          <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                            <button 
+                              className="btn btn-green" 
+                              style={{ padding: "4px 12px", fontSize: "11px" }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await leaguesApi.acceptInvitation(n.id);
+                                  setNotifs(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+                                  window.location.reload(); // Refresh to see new league
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }}
+                            >
+                              Accepter
+                            </button>
+                            <button 
+                              className="btn btn-danger" 
+                              style={{ padding: "4px 12px", fontSize: "11px" }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await leaguesApi.rejectInvitation(n.id);
+                                  setNotifs(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }}
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
@@ -189,6 +224,41 @@ export default function NavbarWrapper() {
                       >
                         <div className="notif-item-title">{n.title}</div>
                         <div className="notif-item-msg">{n.message}</div>
+                        {n.notif_type === "invitation" && !n.is_read && (
+                          <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                            <button 
+                              className="btn btn-green" 
+                              style={{ padding: "4px 12px", fontSize: "11px" }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await leaguesApi.acceptInvitation(n.id);
+                                  setNotifs(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+                                  window.location.reload();
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }}
+                            >
+                              Accepter
+                            </button>
+                            <button 
+                              className="btn btn-danger" 
+                              style={{ padding: "4px 12px", fontSize: "11px" }}
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await leaguesApi.rejectInvitation(n.id);
+                                  setNotifs(prev => prev.map(item => item.id === n.id ? { ...item, is_read: true } : item));
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }}
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        )}
                         <div className="notif-item-time">
                           {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>

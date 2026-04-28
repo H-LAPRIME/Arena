@@ -87,8 +87,8 @@ export default function DashboardPage() {
     }
 
     try {
-      await leaguesApi.addMember(pendingLeague.id, userId);
-      setMsg(`success:${username} has been invited to ${pendingLeague.name}!`);
+      await leaguesApi.inviteMember(pendingLeague.id, userId);
+      setMsg(`success:Invitation envoyée à ${username} pour rejoindre ${pendingLeague.name} !`);
       setSearchQuery("");
       setSearchResults([]);
       loadAll();
@@ -447,9 +447,6 @@ export default function DashboardPage() {
         <div className="card-bg-watermark"><UsersIcon /></div>
         <div className="card-header">
           <span className="card-title"><UsersIcon /> Players Organization</span>
-          {isAdmin && (
-            <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>
-          )}
         </div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "12px" }}>

@@ -491,3 +491,120 @@ async def get_match_advice(
     from app.services.chatbot import generate_approval_comment
     comment = await generate_approval_comment(db, current_user.id, match_id)
     return {"comment": comment}
+
+
+@router.post("/{league_id}/invite/{user_id}")
+def invite_member(
+    league_id: str,
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Send an invitation to join a league."""
+    league = db.query(League).filter(League.id == league_id).first()
+    if not league:
+        raise HTTPException(status_code=404, detail="League not found")
+        
+    if league.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only the creator or an admin can invite members")
+        
+    if league.status != "pending":
+        raise HTTPException(status_code=400, detail="Cannot invite members to a league that has already started")
+        
+    # Check if already a member
+    existing = db.query(LeagueMember).filter(
+        LeagueMember.league_id == league_id,
+        LeagueMember.user_id == user_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="User is already a member of this league")
+
+    # Create notification
+    import json
+    from app.models.notification import Notification
+    
+    notif = Notification(
+        id=str(uuid.uuid4()),
+        user_id=user_id,
+        title="Invitation à rejoindre une ligue 🏆",
+        message=f"{current_user.username} vous a invité à rejoindre la ligue '{league.name}'.",
+        notif_type="invitation",
+        notif_data=json.dumps({"league_id": league_id, "league_name": league.name})
+    )
+    db.add(notif)
+    db.commit()
+    return {"message": "Invitation envoyée"}
+
+
+@router.post("/accept-invitation/{notification_id}")
+def accept_invitation(
+    notification_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Accept a league invitation."""
+    from app.models.notification import Notification
+    import json
+    
+    notif = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    ).first()
+    
+    if not notif or notif.notif_type != "invitation":
+        raise HTTPException(status_code=404, detail="Invitation not found")
+        
+    data = json.loads(notif.notif_data)
+    league_id = data.get("league_id")
+    
+    league = db.query(League).filter(League.id == league_id).first()
+    if not league:
+        raise HTTPException(status_code=404, detail="League no longer exists")
+        
+    if league.status != "pending":
+        raise HTTPException(status_code=400, detail="League has already started")
+        
+    # Check if full
+    count = db.query(LeagueMember).filter(LeagueMember.league_id == league_id).count()
+    if count >= league.max_members:
+        raise HTTPException(status_code=400, detail="League is full")
+
+    # Add member
+    db.add(LeagueMember(
+        id=str(uuid.uuid4()),
+        league_id=league.id,
+        user_id=current_user.id,
+    ))
+    db.add(Standing(
+        id=str(uuid.uuid4()),
+        league_id=league.id,
+        user_id=current_user.id,
+    ))
+    
+    # Mark notif as read
+    notif.is_read = True
+    db.commit()
+    return {"message": f"Vous avez rejoint la ligue {league.name}"}
+
+
+@router.post("/reject-invitation/{notification_id}")
+def reject_invitation(
+    notification_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Reject a league invitation."""
+    from app.models.notification import Notification
+    
+    notif = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id
+    ).first()
+    
+    if not notif:
+        raise HTTPException(status_code=404, detail="Invitation not found")
+        
+    notif.is_read = True
+    db.commit()
+    return {"message": "Invitation rejetée"}
+
