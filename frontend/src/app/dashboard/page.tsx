@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { usersApi, leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
 import { GridIcon, ZapIcon, GamepadIcon, TrophyIcon, UsersIcon, PlusIcon, HomeIcon, PlaneIcon, CrownIcon, CheckIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [viewingLeague, setViewingLeague] = useState<any>(null);
   const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
   const { user, isAdmin } = useAuth();
+  const router = useRouter();
 
   useEffect(() => { loadAll(); }, []);
 
@@ -165,7 +167,7 @@ export default function DashboardPage() {
             </span>
             <input
               type="text"
-              placeholder="Invite a player..."
+              placeholder="Search player..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               style={{
@@ -213,8 +215,9 @@ export default function DashboardPage() {
                   padding: "10px 14px",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   transition: "background 0.15s, padding-left 0.15s",
-                  cursor: "default"
+                  cursor: "pointer"
                 }}
+                  onClick={() => router.push(`/players/${p.id}`)}
                   onMouseEnter={e => { e.currentTarget.style.background = "rgba(37,99,235,0.08)"; e.currentTarget.style.paddingLeft = "18px"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "14px"; }}
                 >
@@ -232,7 +235,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleInvite(p.id, p.username)}
+                    onClick={(e) => { e.stopPropagation(); handleInvite(p.id, p.username); }}
                     className="btn btn-sm btn-green"
                     style={{ fontSize: "10px", padding: "4px 10px", flexShrink: 0 }}
                   >
