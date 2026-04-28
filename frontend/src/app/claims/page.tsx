@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { claimsApi, leaguesApi, matchesApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ShieldIcon, TrophyIcon, HandshakeIcon, CheckIcon, TrashIcon } from "@/components/Icons";
+import LeagueSelector from "@/components/LeagueSelector";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -26,26 +27,39 @@ function ClaimsContent() {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedClaims, setSelectedClaims] = useState<string[]>([]);
 
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
+
   useEffect(() => { loadData(); }, []);
+
+  useEffect(() => {
+    if (selectedLeagueId) {
+      loadMatches(selectedLeagueId);
+    } else {
+      setMatches([]);
+    }
+  }, [selectedLeagueId, user?.id, matchIdFromUrl]);
+
+  async function loadMatches(leagueId: string) {
+    try {
+      const allMatches = await leaguesApi.getMatches(leagueId);
+      const mine = allMatches.filter((m: any) =>
+        (m.home_player_id === user?.id || m.away_player_id === user?.id) && m.status === "pending"
+      );
+      setMatches(mine);
+      
+      if (matchIdFromUrl && mine.some((m: any) => m.id === matchIdFromUrl)) {
+        setForm(f => ({ ...f, matchId: matchIdFromUrl }));
+      }
+    } catch {}
+  }
 
   async function loadData() {
     try {
-      const leagues = await leaguesApi.getAll();
-      const active = leagues.find((l: any) => l.status === "active");
-      if (active) {
-        const allMatches = await leaguesApi.getMatches(active.id);
-        // Only show matches where the current user is a player AND status is pending
-        const mine = allMatches.filter((m: any) =>
-          (m.home_player_id === user?.id || m.away_player_id === user?.id) && m.status === "pending"
-        );
-        setMatches(mine);
-        
-        if (matchIdFromUrl && mine.some((m: any) => m.id === matchIdFromUrl)) {
-          setForm(f => ({ ...f, matchId: matchIdFromUrl }));
-        }
-      }
       const claims = await claimsApi.getMy();
       setMyClaims(claims);
+      if (selectedLeagueId) {
+        loadMatches(selectedLeagueId);
+      }
     } catch { /* API not ready */ }
   }
 
@@ -160,6 +174,12 @@ function ClaimsContent() {
           <div className="card-header">
             <span className="card-title">New Claim</span>
           </div>
+
+          <LeagueSelector 
+            onSelect={setSelectedLeagueId} 
+            selectedId={selectedLeagueId || undefined} 
+          />
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Match</label>
