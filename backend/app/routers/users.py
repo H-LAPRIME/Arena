@@ -116,6 +116,7 @@ def get_users_grouped_by_league(current_user: User = Depends(get_current_user), 
             "status": league.status,
             "created_by": league.created_by,
             "members": [UserResponse.model_validate(m) for m in members]
+        })
     
     # Add "Unassigned" users (those not in any league)
     all_users = db.query(User).filter(User.is_active == True).all()
