@@ -25,12 +25,16 @@ export default function LeagueSelector({ onSelect, selectedId, autoSelectIfOnlyO
     }).catch(() => setLoading(false));
   }, [onSelect, autoSelectIfOnlyOne, selectedId]);
 
-  if (loading) return null;
-  if (leagues.length === 0) return <div className="card" style={{ textAlign: "center", padding: "20px" }}>Vous n'êtes membre d'aucune ligue active.</div>;
+  // Auto-select the single league silently — no UI shown
+  if (autoSelectIfOnlyOne && leagues.length === 1) {
+    return null; // already called onSelect in useEffect
+  }
 
-  // If already selected, show a small "switch" button or dropdown
+  // If already selected and only one league, show nothing (auto-selected)
   if (selectedId) {
     const current = leagues.find(l => l.id === selectedId);
+    // Only show the active bar + switcher if user has 2+ leagues
+    if (leagues.length < 2) return null;
     return (
       <div className="league-selector-active" style={{ 
         display: "flex", 
@@ -47,31 +51,29 @@ export default function LeagueSelector({ onSelect, selectedId, autoSelectIfOnlyO
           <TrophyIcon />
           <span style={{ fontWeight: 700, color: "var(--accent-light)" }}>{current?.name || "Ligue"}</span>
         </div>
-        {leagues.length > 1 && (
-          <select 
-            value={selectedId} 
-            onChange={(e) => onSelect(e.target.value)}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid var(--border)",
-              color: "var(--text-primary)",
-              padding: "4px 8px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              cursor: "pointer",
-              outline: "none"
-            }}
-          >
-            {leagues.map(l => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-        )}
+        <select 
+          value={selectedId} 
+          onChange={(e) => onSelect(e.target.value)}
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid var(--border)",
+            color: "var(--text-primary)",
+            padding: "4px 8px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            cursor: "pointer",
+            outline: "none"
+          }}
+        >
+          {leagues.map(l => (
+            <option key={l.id} value={l.id}>{l.name}</option>
+          ))}
+        </select>
       </div>
     );
   }
 
-  // If nothing selected, show cards
+  // If nothing selected yet and user has multiple leagues — show cards
   return (
     <div className="league-selection-grid" style={{ 
       display: "grid", 
@@ -91,9 +93,6 @@ export default function LeagueSelector({ onSelect, selectedId, autoSelectIfOnlyO
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <span className={`badge ${league.status === "active" ? "badge-green" : "badge-gold"}`}>
-              {league.status.toUpperCase()}
-            </span>
             <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{league.member_count} membres</span>
           </div>
           <h3 style={{ fontSize: "20px", marginBottom: "8px" }}>{league.name}</h3>

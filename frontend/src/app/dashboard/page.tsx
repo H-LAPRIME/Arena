@@ -394,7 +394,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  {!isSelected && (
+                  {!isSelected && myLeagues.length > 1 && (
                     <button
                       className="btn btn-sm btn-secondary"
                       style={{ fontSize: "11px", padding: "5px 10px", display: "flex", alignItems: "center", gap: "4px" }}
