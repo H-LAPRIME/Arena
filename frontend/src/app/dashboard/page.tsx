@@ -123,13 +123,87 @@ export default function DashboardPage() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title"><GridIcon /> Dashboard</h1>
-        <p className="page-subtitle">Manage your matches and leagues</p>
+      <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h1 className="page-title"><GridIcon /> Dashboard</h1>
+          <p className="page-subtitle">Manage your matches and leagues</p>
+        </div>
+        {/* Compact Player Search */}
+        <div style={{ position: "relative", minWidth: "240px", maxWidth: "320px", flex: "0 0 auto" }}>
+          <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "14px", pointerEvents: "none" }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Invite a player..."
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "9px 14px 9px 36px",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid var(--border)",
+              borderRadius: "10px",
+              color: "var(--text-primary)",
+              fontSize: "13px",
+              outline: "none",
+              transition: "border-color 0.2s"
+            }}
+            onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
+            onBlur={(e) => e.target.style.borderColor = "var(--border)"}
+          />
+          {searching && (
+            <div style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)" }}>
+              <div className="spinner" style={{ width: "12px", height: "12px" }}></div>
+            </div>
+          )}
+          {searchResults.length > 0 && (
+            <div style={{
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              right: 0,
+              left: 0,
+              background: "var(--card-bg)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              zIndex: 999
+            }}>
+              {searchResults.map((p: any) => (
+                <div key={p.id} style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 14px",
+                  borderBottom: "1px solid var(--border)",
+                  transition: "background 0.15s"
+                }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div className="player-avatar" style={{ width: "28px", height: "28px", fontSize: "12px" }}>
+                      {p.avatar_url ? (
+                        <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : p.username[0].toUpperCase()}
+                    </div>
+                    <span style={{ fontWeight: 600, fontSize: "13px" }}>{p.username}</span>
+                  </div>
+                  <button
+                    onClick={() => handleInvite(p.id, p.username)}
+                    className="btn btn-sm btn-green"
+                    style={{ fontSize: "10px", padding: "4px 10px" }}
+                  >
+                    <PlusIcon /> Invite
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {msg && (
-        <div 
+        <div
           className={`toast ${msg.startsWith("success:") ? "success" : "error"}`}
           onClick={() => setMsg("")}
           style={{ cursor: "pointer", marginBottom: "20px" }}
@@ -137,95 +211,6 @@ export default function DashboardPage() {
           {msg.replace(/^(success:|error:)/, "")}
         </div>
       )}
-
-      {/* Global Player Search Section */}
-      <div className="card" style={{ 
-        marginBottom: "32px", 
-        padding: "28px", 
-        background: "var(--gradient-dark)", 
-        border: "2px solid var(--accent)",
-        boxShadow: "0 10px 40px rgba(37, 99, 235, 0.15)"
-      }}>
-        <div style={{ marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "18px", color: "white", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
-            <UsersIcon /> Recherche Globale de Joueurs
-          </h2>
-          <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", marginTop: "4px" }}>
-            Trouvez des joueurs par nom et invitez-les dans vos ligues en attente.
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-          <div style={{ flex: 1, position: "relative" }}>
-            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", fontSize: "18px" }}>🔍</span>
-            <input 
-              type="text" 
-              placeholder="Ex: 'Mouad', 'Adam'..." 
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "14px 20px 14px 48px",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "12px",
-                color: "white",
-                fontSize: "15px",
-                outline: "none",
-                transition: "all 0.3s"
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--accent)"}
-              onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
-            />
-            {searching && (
-              <div style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)" }}>
-                <div className="spinner" style={{ width: "16px", height: "16px" }}></div>
-              </div>
-            )}
-          </div>
-          <button className="btn btn-primary" style={{ padding: "14px 32px", borderRadius: "12px" }}>
-            RECHERCHER
-          </button>
-        </div>
-
-        {searchResults.length > 0 && (
-          <div style={{ 
-            marginTop: "16px", 
-            background: "rgba(0,0,0,0.3)", 
-            borderRadius: "12px", 
-            overflow: "hidden",
-            border: "1px solid var(--border)" 
-          }}>
-            {searchResults.map((p: any) => (
-              <div key={p.id} style={{ 
-                display: "flex", 
-                justifyContent: "space-between", 
-                alignItems: "center", 
-                padding: "12px 20px",
-                borderBottom: "1px solid rgba(255,255,255,0.05)"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div className="player-avatar" style={{ width: "32px", height: "32px", fontSize: "14px" }}>
-                    {p.avatar_url ? (
-                      <img src={getAvatarUrl(p.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      p.username[0].toUpperCase()
-                    )}
-                  </div>
-                  <span style={{ fontWeight: 600 }}>{p.username}</span>
-                </div>
-                <button 
-                  onClick={() => handleInvite(p.id, p.username)}
-                  className="btn btn-sm btn-green"
-                  style={{ fontSize: "11px", padding: "6px 12px" }}
-                >
-                  <PlusIcon /> Invite to League
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Quick Stats */}
       <div className="stat-grid" style={{ marginBottom: "32px" }}>
@@ -450,39 +435,37 @@ export default function DashboardPage() {
         </div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "12px" }}>
-          {groupedPlayers.map((league: any) => (
-            <div key={league.league_id} style={{ 
-              background: "rgba(255,255,255,0.02)", 
-              borderRadius: "16px", 
-              padding: "20px",
-              border: "1px solid rgba(255,255,255,0.05)"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-                <h3 style={{ fontSize: "16px", color: "var(--accent-light)", margin: 0 }}>
+          {groupedPlayers.length === 0 ? (
+            <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "20px", fontSize: "14px" }}>You are not in any leagues yet.</p>
+          ) : groupedPlayers.map((league: any) => (
+            <div key={league.league_id}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "8px", borderBottom: "1px solid var(--border)" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--accent-light)", margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {league.league_name}
                 </h3>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  {league.members.length} members
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", background: "rgba(255,255,255,0.05)", padding: "2px 8px", borderRadius: "20px" }}>
+                  {league.members.length} players
                 </span>
               </div>
               <div className="grid-3">
                 {league.members.map((p: any) => (
                   <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div className="stat-card" style={{ cursor: "pointer", background: "rgba(0,0,0,0.2)", padding: "16px" }}>
-                      <div className="player-avatar" style={{ width: "40px", height: "40px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
+                    <div className="stat-card" style={{ cursor: "pointer", textAlign: "center", padding: "20px 16px" }}>
+                      <div className="card-bg-watermark" style={{ fontSize: "40px", opacity: 0.04 }}><UsersIcon /></div>
+                      <div className="player-avatar" style={{ width: "44px", height: "44px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
                         {p.avatar_url ? (
-                          <img 
-                            src={getAvatarUrl(p.avatar_url) || ""} 
-                            alt="Avatar" 
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                          <img
+                            src={getAvatarUrl(p.avatar_url) || ""}
+                            alt="Avatar"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
                         ) : (
                           p.username[0].toUpperCase()
                         )}
                       </div>
-                      <div style={{ fontWeight: 600, fontSize: "14px" }}>{p.username}</div>
-                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                        {p.total_titles || 0} titles {p.is_lord && <TrophyIcon />}
+                      <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "4px" }}>{p.username}</div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                        🏆 {p.total_trophies || 0}{p.is_lord && <span title="Lord" style={{ marginLeft: "4px" }}>👑</span>}
                       </div>
                     </div>
                   </a>
