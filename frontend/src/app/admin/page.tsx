@@ -41,6 +41,9 @@ export default function AdminPage() {
 
   useEffect(() => { if (isAdmin) loadAll(); }, [isAdmin, statusFilter]);
 
+  // Tab Switch Reset
+  useEffect(() => { setSearchTerm(""); }, [tab]);
+
   async function loadAll() {
     try {
       const [c, u, m, s] = await Promise.all([
@@ -237,9 +240,6 @@ export default function AdminPage() {
       </div>
 
       {/* Shared Search Bar / Filters handled per tab below */}
-      
-      {/* Tab Switch Reset */}
-      <useEffect(() => { setSearchTerm(""); }, [tab]);
 
       {/* Claims Tab */}
       {tab === "claims" && (
