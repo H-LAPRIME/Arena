@@ -141,18 +141,18 @@ export default function DashboardPage() {
             borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
             border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "var(--shadow-xs)",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
             backdropFilter: "blur(12px)",
             transition: "box-shadow 0.3s, border-color 0.3s",
           }}
             onFocusCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.12), var(--shadow-xs)";
+              el.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.12), 0 4px 14px rgba(0,0,0,0.15)";
               el.style.borderColor = "rgba(37,99,235,0.6)";
             }}
             onBlurCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "var(--shadow-xs)";
+              el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.12)";
               el.style.borderColor = "rgba(255,255,255,0.12)";
             }}
           >
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                 width: "100%",
                 padding: "10px 38px 10px 40px",
                 background: "transparent",
-                border: "none",
+                border: "white",
                 borderRadius: "12px",
                 color: "var(--text-primary)",
                 fontSize: "13px",
