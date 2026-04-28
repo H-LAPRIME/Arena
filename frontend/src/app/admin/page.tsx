@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [userFilterLeague, setUserFilterLeague] = useState<string>("all");
   const [userSortBy, setUserSortBy] = useState<"name" | "date">("name");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Modal States
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -73,8 +74,16 @@ export default function AdminPage() {
       }
     });
 
+    // Search filter
+    if (searchTerm) {
+      result = result.filter(u => 
+        u.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
     setFilteredUsers(result);
-  }, [users, userSortBy]);
+  }, [users, userSortBy, searchTerm]);
 
   async function handleLeagueFilterChange(leagueId: string) {
     setUserFilterLeague(leagueId);
@@ -232,11 +241,26 @@ export default function AdminPage() {
         ))}
       </div>
 
+      {/* Shared Search Bar / Filters handled per tab below */}
+      
+      {/* Tab Switch Reset */}
+      <useEffect(() => { setSearchTerm(""); }, [tab]);
+
       {/* Claims Tab */}
       {tab === "claims" && (
-        <div className="card">
-          <div className="card-header">
+        <div className="card" style={{ maxHeight: "750px", overflowY: "auto", scrollbarWidth: "thin" }}>
+          <div className="card-header" style={{ flexWrap: "wrap", gap: "12px" }}>
             <span className="card-title">Claims</span>
+            <div style={{ display: "flex", gap: "10px", flex: 1, minWidth: "200px" }}>
+              <input 
+                type="text" 
+                placeholder="Search claims..." 
+                className="btn btn-sm"
+                style={{ background: "var(--bg-dark)", border: "1px solid var(--border)", flex: 1, textAlign: "left", cursor: "text" }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             <div style={{ display: "flex", gap: "8px" }}>
               {["pending", "approved", "rejected", ""].map(s => (
                 <button key={s || "all"} onClick={() => setStatusFilter(s)} className="btn btn-sm" style={{
@@ -251,7 +275,13 @@ export default function AdminPage() {
           </div>
           {claims.length === 0 ? <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "40px", fontSize: "14px" }}>No claims</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {claims.map((c: any) => (
+              {claims
+                .filter((c: any) => 
+                  c.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                  c.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  c.claimant_username.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((c: any) => (
                 <div key={c.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "12px", padding: "18px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
                   <div style={{ flexShrink: 0 }}>
                     {c.screenshot_url ? <a href={`${API_URL}${c.screenshot_url}`} target="_blank" rel="noopener noreferrer"><img src={`${API_URL}${c.screenshot_url}`} alt="proof" style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "8px", border: "1px solid var(--border)" }} /></a> : <div style={{ width: "80px", height: "60px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "12px" }}>No proof</div>}
@@ -294,10 +324,18 @@ export default function AdminPage() {
 
       {/* Users Tab */}
       {tab === "users" && (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="card" style={{ padding: 0, overflow: "hidden", maxHeight: "750px", display: "flex", flexDirection: "column" }}>
           <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0, flexWrap: "wrap", gap: "12px" }}>
             <span className="card-title">Players</span>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", flex: 1 }}>
+              <input 
+                type="text" 
+                placeholder="Search players..." 
+                className="btn btn-sm"
+                style={{ background: "var(--bg-dark)", border: "1px solid var(--border)", flex: 1, minWidth: "150px", textAlign: "left", cursor: "text" }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
               <select 
                 className="btn btn-sm" 
                 style={{ background: "var(--bg-dark)", color: "var(--text-primary)", border: "1px solid var(--border)", fontSize: "12px" }}
@@ -321,7 +359,7 @@ export default function AdminPage() {
               <button onClick={() => { setEditingUser({}); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
             </div>
           </div>
-          <div className="table-container admin-table-container">
+          <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
             <table className="admin-table">
               <thead>
                 <tr><th>Player</th><th>Email</th><th>Role</th><th>Actions</th></tr>
@@ -329,7 +367,17 @@ export default function AdminPage() {
               <tbody>
                 {filteredUsers.map((u: any) => (
                   <tr key={u.id}>
-                    <td><span className="player-name">{u.username}</span> {!u.is_active && <span className="badge badge-danger">Inactive</span>}</td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div className="player-avatar" style={{ width: "28px", height: "28px", fontSize: "11px", flexShrink: 0 }}>
+                          {u.avatar_url ? (
+                            <img src={getAvatarUrl(u.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                          ) : u.username[0].toUpperCase()}
+                        </div>
+                        <span className="player-name">{u.username}</span> 
+                        {!u.is_active && <span className="badge badge-danger" style={{ fontSize: "9px", padding: "1px 5px" }}>Inactive</span>}
+                      </div>
+                    </td>
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
                     <td><span className={u.role === "admin" ? "badge badge-gold" : "badge"}>{u.role}</span></td>
                     <td>
@@ -346,18 +394,32 @@ export default function AdminPage() {
 
       {/* Matches Tab */}
       {tab === "matches" && (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+        <div className="card" style={{ padding: 0, overflow: "hidden", maxHeight: "750px", display: "flex", flexDirection: "column" }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0, flexWrap: "wrap", gap: "12px" }}>
             <span className="card-title">Matches</span>
+            <input 
+              type="text" 
+              placeholder="Search matches..." 
+              className="btn btn-sm"
+              style={{ background: "var(--bg-dark)", border: "1px solid var(--border)", flex: 1, minWidth: "150px", textAlign: "left", cursor: "text" }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <button onClick={() => { setEditingMatch({}); setIsMatchModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Match</button>
           </div>
-          <div className="table-container admin-table-container">
+          <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
             <table className="admin-table">
               <thead>
                 <tr><th>League</th><th>Match Day</th><th>Home</th><th>Away</th><th>Score</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                {matches.map((m: any) => (
+                {matches
+                  .filter((m: any) => 
+                    m.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    m.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    m.league_id.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((m: any) => (
                   <tr key={m.id}>
                     <td>{m.league_id}</td>
                     <td>J{m.match_day}</td>
@@ -379,18 +441,31 @@ export default function AdminPage() {
 
       {/* Seasons Tab */}
       {tab === "seasons" && (
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0 }}>
+        <div className="card" style={{ padding: 0, overflow: "hidden", maxHeight: "750px", display: "flex", flexDirection: "column" }}>
+          <div className="card-header" style={{ padding: "20px", borderBottom: "1px solid var(--border)", marginBottom: 0, flexWrap: "wrap", gap: "12px" }}>
             <span className="card-title">Seasons / Leagues</span>
+            <input 
+              type="text" 
+              placeholder="Search leagues..." 
+              className="btn btn-sm"
+              style={{ background: "var(--bg-dark)", border: "1px solid var(--border)", flex: 1, minWidth: "150px", textAlign: "left", cursor: "text" }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <button onClick={() => { setEditingSeason({}); setIsSeasonModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Create League</button>
           </div>
-          <div className="table-container admin-table-container">
+          <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
             <table className="admin-table">
               <thead>
                 <tr><th>Name</th><th>Code</th><th>Members</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody>
-                {seasons.map((s: any) => (
+                {seasons
+                  .filter((s: any) => 
+                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    s.join_code.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((s: any) => (
                   <tr key={s.id}>
                     <td><span className="player-name">{s.name}</span></td>
                     <td><code>{s.join_code}</code></td>
