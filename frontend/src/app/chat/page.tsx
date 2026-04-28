@@ -16,8 +16,10 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messagesEnd.current) {
+      messagesEnd.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [messages, loading]);
 
   async function loadHistory() {
     try {
