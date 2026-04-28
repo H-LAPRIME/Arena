@@ -318,6 +318,13 @@ body {
   width: 100%;
   height: 100%;
 }
+.next-match-watermark {
+  width: 320px;
+  height: 320px;
+  right: -20px;
+  bottom: -40px;
+  opacity: 0.06;
+}
 .card:hover .card-bg-watermark, .stat-card:hover .card-bg-watermark, .chat-container:hover .card-bg-watermark {
   transform: rotate(-25deg) scale(1.1);
   color: var(--accent);

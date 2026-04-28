@@ -120,7 +120,7 @@ export default function DashboardPage() {
       <div className="grid-2">
         {/* Next Match */}
         <div className="card">
-          <div className="card-bg-watermark"><ZapIcon /></div>
+          <div className="card-bg-watermark next-match-watermark"><ZapIcon /></div>
           <div className="card-header">
             <span className="card-title"><ZapIcon /> Next Match</span>
           </div>
