@@ -325,9 +325,19 @@ body {
   bottom: -40px;
   opacity: 0.06;
 }
+.chat-watermark {
+  width: 480px;
+  height: 480px;
+  right: -100px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-10deg);
+}
 .card:hover .card-bg-watermark, .stat-card:hover .card-bg-watermark, .chat-container:hover .card-bg-watermark {
   transform: rotate(-25deg) scale(1.1);
   color: var(--accent);
+}
+.chat-container:hover .chat-watermark {
+  transform: translateY(-50%) rotate(-15deg) scale(1.05);
 }
 .card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
 .card-header {
