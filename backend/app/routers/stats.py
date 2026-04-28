@@ -13,9 +13,14 @@ from app.routers.auth import get_current_user
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
 @router.get("/records")
-def get_records(db: Session = Depends(get_db)):
+def get_records(league_id: str = None, db: Session = Depends(get_db)):
+    # Base query for matches
+    match_query = db.query(Match).filter(Match.status == "played")
+    if league_id:
+        match_query = match_query.filter(Match.league_id == league_id)
+        
     # Biggest win
-    biggest_win_match = db.query(Match).filter(Match.status == "played").order_by(func.abs(Match.home_score - Match.away_score).desc()).first()
+    biggest_win_match = match_query.order_by(func.abs(Match.home_score - Match.away_score).desc()).first()
     biggest_win = None
     if biggest_win_match:
         biggest_win = {
@@ -25,7 +30,7 @@ def get_records(db: Session = Depends(get_db)):
         }
 
     # Highest scoring match
-    highest_scoring_match_obj = db.query(Match).filter(Match.status == "played").order_by((Match.home_score + Match.away_score).desc()).first()
+    highest_scoring_match_obj = match_query.order_by((Match.home_score + Match.away_score).desc()).first()
     highest_scoring_match = None
     if highest_scoring_match_obj:
         highest_scoring_match = {
@@ -39,10 +44,22 @@ def get_records(db: Session = Depends(get_db)):
     players = db.query(User).filter(User.is_active == True).all()
     player_stats = []
     for p in players:
-        all_standings = db.query(Standing).filter(Standing.user_id == p.id).all()
+        # Filter standings by league if provided
+        standing_query = db.query(Standing).filter(Standing.user_id == p.id)
+        if league_id:
+            standing_query = standing_query.filter(Standing.league_id == league_id)
+        
+        all_standings = standing_query.all()
+        if not all_standings and league_id:
+            continue # Don't show players not in this league
+            
         total_wins = sum(s.wins for s in all_standings)
         total_goals = sum(s.goals_for for s in all_standings)
-        titles = db.query(League).filter(League.champion_id == p.id).count()
+        
+        league_query = db.query(League).filter(League.champion_id == p.id)
+        if league_id:
+            league_query = league_query.filter(League.id == league_id)
+        titles = league_query.count()
         
         player_stats.append({
             "username": p.username,
@@ -62,17 +79,21 @@ def get_records(db: Session = Depends(get_db)):
     }
 
 @router.get("/head-to-head/{id1}/{id2}")
-def get_h2h(id1: str, id2: str, db: Session = Depends(get_db)):
+def get_h2h(id1: str, id2: str, league_id: str = None, db: Session = Depends(get_db)):
     u1 = db.query(User).filter(User.id == id1).first()
     u2 = db.query(User).filter(User.id == id2).first()
     if not u1 or not u2:
         raise HTTPException(status_code=404, detail="User not found")
-
-    matches = db.query(Match).filter(
+ 
+    match_query = db.query(Match).filter(
         Match.status == "played",
         ((Match.home_player_id == id1) & (Match.away_player_id == id2)) |
         ((Match.home_player_id == id2) & (Match.away_player_id == id1))
-    ).all()
+    )
+    if league_id:
+        match_query = match_query.filter(Match.league_id == league_id)
+        
+    matches = match_query.all()
 
     u1_wins = 0
     u2_wins = 0

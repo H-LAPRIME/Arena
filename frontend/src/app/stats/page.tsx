@@ -3,31 +3,52 @@ import { useEffect, useState } from "react";
 import { statsApi, usersApi, leaguesApi } from "@/lib/api";
 import { ChartIcon, ZapIcon, TrophyIcon, SwordIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
+import LeagueSelector from "@/components/LeagueSelector";
 
 export default function StatsPage() {
   const [records, setRecords] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
   const [h2h, setH2h] = useState<any>(null);
   const [p1, setP1] = useState("");
   const [p2, setP2] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [botMessage, setBotMessage] = useState("");
 
   useEffect(() => {
-    Promise.all([statsApi.records(), usersApi.getAll()])
-      .then(([r, p]) => { setRecords(r); setPlayers(p); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadBaseData();
   }, []);
+
+  useEffect(() => {
+    loadLeagueStats(selectedLeagueId || undefined);
+  }, [selectedLeagueId]);
+
+  async function loadBaseData() {
+    try {
+      const p = await usersApi.getAll();
+      setPlayers(p);
+    } catch (e) {}
+    setLoading(false);
+  }
+
+  async function loadLeagueStats(lid?: string) {
+    setLoadingData(true);
+    try {
+      const r = await statsApi.records(lid);
+      setRecords(r);
+    } catch (e) {}
+    setLoadingData(false);
+  }
 
   async function loadH2H() {
     if (!p1 || !p2 || p1 === p2) return;
     try {
-      const data = await statsApi.headToHead(p1, p2);
+      const data = await statsApi.headToHead(p1, p2, selectedLeagueId || undefined);
       setH2h(data);
       
       // Bot intervention
-      leaguesApi.getH2HAdvice("global", p2) // Using p1/p2 for H2H
+      leaguesApi.getH2HAdvice(selectedLeagueId || "global", p2)
         .then(res => setBotMessage(res.comment))
         .catch(() => {});
     } catch (e) {}
@@ -42,8 +63,18 @@ export default function StatsPage() {
         <p className="page-subtitle">Records, matches and analysis</p>
       </div>
 
-      {/* Records */}
-      {records && (
+      <LeagueSelector 
+        onSelect={setSelectedLeagueId} 
+        selectedId={selectedLeagueId || undefined} 
+        autoSelectIfOnlyOne={false} // Allow global view by default
+      />
+
+      {loadingData ? (
+        <div className="loading-spinner"><div className="spinner"></div></div>
+      ) : (
+        <>
+          {/* Records */}
+          {records && (
         <div className="grid-2" style={{ marginBottom: "32px" }}>
           <div className="card">
             <div className="card-bg-watermark"><ZapIcon /></div>
@@ -168,6 +199,8 @@ export default function StatsPage() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {botMessage && <BotIntervention message={botMessage} onClose={() => setBotMessage("")} />}
     </div>

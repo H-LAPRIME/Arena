@@ -2,10 +2,12 @@
 import { useEffect, useState, useRef } from "react";
 import { chatApi, usersApi } from "@/lib/api";
 import { BotIcon, ShieldIcon, GamepadIcon, TrashIcon } from "@/components/Icons";
+import LeagueSelector from "@/components/LeagueSelector";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState<any[]>([]);
   const messagesEnd = useRef<HTMLDivElement>(null);
@@ -37,9 +39,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const stored = typeof window !== "undefined" ? localStorage.getItem("user") : null;
-      const userId = stored ? JSON.parse(stored).id : undefined;
-      const res = await chatApi.send(userMsg, userId);
+      const res = await chatApi.send(userMsg, selectedLeagueId || undefined);
       setMessages(prev => [...prev, { role: "assistant", content: res.reply, id: `ai-${Date.now()}` }]);
     } catch (err: any) {
       setMessages(prev => [...prev, { role: "assistant", content: `Error: ${err.message}`, id: `err-${Date.now()}` }]);
@@ -77,6 +77,12 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+
+      <LeagueSelector 
+        onSelect={setSelectedLeagueId} 
+        selectedId={selectedLeagueId || undefined}
+        autoSelectIfOnlyOne={false}
+      />
 
       <div className="chat-container">
         <div className="card-bg-watermark chat-watermark" style={{ opacity: 0.08 }}><BotIcon /></div>

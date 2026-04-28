@@ -59,6 +59,37 @@ def list_users(current_user: User = Depends(get_current_user), db: Session = Dep
     return [UserResponse.model_validate(u) for u in users]
 
 
+@router.get("/grouped-by-league")
+def get_users_grouped_by_league(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Returns a list of leagues the user is in, each with its members."""
+    from app.models.league import League
+    
+    # Get all leagues the current user is a member of
+    user_leagues = (
+        db.query(League)
+        .join(LeagueMember, League.id == LeagueMember.league_id)
+        .filter(LeagueMember.user_id == current_user.id)
+        .all()
+    )
+    
+    result = []
+    for league in user_leagues:
+        members = (
+            db.query(User)
+            .join(LeagueMember, User.id == LeagueMember.user_id)
+            .filter(LeagueMember.league_id == league.id)
+            .all()
+        )
+        result.append({
+            "league_id": league.id,
+            "league_name": league.name,
+            "status": league.status,
+            "members": [UserResponse.model_validate(m) for m in members]
+        })
+    
+    return result
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()

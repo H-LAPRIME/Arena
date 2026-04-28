@@ -61,6 +61,7 @@ export const authApi = {
 // Users
 export const usersApi = {
   getAll: () => apiFetch("/api/users"),
+  getGroupedByLeague: () => apiFetch("/api/users/grouped-by-league"),
   adminList: () => apiFetch("/api/admin/users"),
   getOne: (id: string) => apiFetch(`/api/users/${id}`),
   update: (id: string, data: Record<string, any>) =>
@@ -177,15 +178,16 @@ export const certificatesApi = {
 
 // Stats
 export const statsApi = {
-  headToHead: (id1: string, id2: string) => apiFetch(`/api/stats/head-to-head/${id1}/${id2}`),
-  records: () => apiFetch("/api/stats/records"),
+  headToHead: (id1: string, id2: string, leagueId?: string) => 
+    apiFetch(`/api/stats/head-to-head/${id1}/${id2}${leagueId ? `?league_id=${leagueId}` : ""}`),
+  records: (leagueId?: string) => apiFetch(`/api/stats/records${leagueId ? `?league_id=${leagueId}` : ""}`),
   player: (id: string) => apiFetch(`/api/stats/player/${id}`),
 };
 
 // Chat
 export const chatApi = {
-  send: (message: string, user_id?: string) =>
-    apiFetch("/api/chat", { method: "POST", body: JSON.stringify({ message, user_id }) }),
+  send: (message: string, league_id?: string) =>
+    apiFetch("/api/chat", { method: "POST", body: JSON.stringify({ message, league_id }) }),
   history: (limit?: number) => apiFetch(`/api/chat/history?limit=${limit || 50}`),
   clearHistory: () => apiFetch("/api/chat/history", { method: "DELETE" }),
 };
