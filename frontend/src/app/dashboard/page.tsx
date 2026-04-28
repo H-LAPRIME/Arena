@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usersApi, leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
-import { GridIcon, ZapIcon, GamepadIcon, TrophyIcon, UsersIcon, PlusIcon, HomeIcon, PlaneIcon } from "@/components/Icons";
+import { GridIcon, ZapIcon, GamepadIcon, TrophyIcon, UsersIcon, PlusIcon, HomeIcon, PlaneIcon, CrownIcon, CheckIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 import { useAuth } from "@/lib/auth";
 
@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [standings, setStandings] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [activeLeague, setActiveLeague] = useState<any>(null);
+  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,10 +42,14 @@ export default function DashboardPage() {
       setMyLeagues(ml);
       setGroupedPlayers(gp);
       
-      // Active league should be one of MY leagues
-      const active = ml.find((x: any) => x.status === "active");
+      // Active league: prefer user-selected, else first active, else first in list
+      const storedId = typeof window !== "undefined" ? localStorage.getItem("selected_league_id") : null;
+      const active = (storedId && ml.find((x: any) => x.id === storedId)) ||
+                     ml.find((x: any) => x.status === "active") ||
+                     (ml.length > 0 ? ml[0] : null);
       if (active) {
         setActiveLeague(active);
+        setSelectedLeagueId(active.id);
         const [st, lm] = await Promise.all([
           leaguesApi.getStandings(active.id),
           leaguesApi.getMatches(active.id)
@@ -328,41 +333,75 @@ export default function DashboardPage() {
           <span className="card-title"><TrophyIcon /> My Leagues</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {myLeagues.length > 0 ? myLeagues.map((lg: any) => (
-            <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", border: "1px solid var(--border)", borderRadius: "8px", background: "rgba(255,255,255,0.01)" }}>
-              <div style={{ flex: 1, cursor: "pointer" }} onClick={() => handleViewLeague(lg)}>
-                <div style={{ fontWeight: 600, fontSize: "16px", color: "var(--text-primary)" }}>{lg.name}</div>
-                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", display: "flex", gap: "12px" }}>
-                  <span>Status: <span style={{ color: lg.status === "pending" ? "var(--gold)" : "var(--green)", fontWeight: 600 }}>{lg.status.toUpperCase()}</span></span>
-                  <span>•</span>
-                  <span>{lg.member_count} Players</span>
+          {myLeagues.length > 0 ? myLeagues.map((lg: any) => {
+            const isSelected = selectedLeagueId === lg.id;
+            return (
+              <div key={lg.id} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "12px 16px",
+                border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
+                borderRadius: "10px",
+                background: isSelected ? "rgba(37,99,235,0.06)" : "rgba(255,255,255,0.01)",
+                transition: "all 0.2s"
+              }}>
+                <div style={{ flex: 1, cursor: "pointer" }} onClick={() => handleViewLeague(lg)}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ fontWeight: 600, fontSize: "15px", color: "var(--text-primary)" }}>{lg.name}</div>
+                    {isSelected && (
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--accent-light)", background: "rgba(37,99,235,0.15)", padding: "2px 7px", borderRadius: "20px", letterSpacing: "0.05em" }}>SELECTED</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", display: "flex", gap: "12px" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}><UsersIcon />{lg.member_count} players</span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  {!isSelected && (
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      style={{ fontSize: "11px", padding: "5px 10px", display: "flex", alignItems: "center", gap: "4px" }}
+                      onClick={async () => {
+                        setSelectedLeagueId(lg.id);
+                        if (typeof window !== "undefined") localStorage.setItem("selected_league_id", lg.id);
+                        setActiveLeague(lg);
+                        try {
+                          const [st, lm] = await Promise.all([
+                            leaguesApi.getStandings(lg.id),
+                            leaguesApi.getMatches(lg.id)
+                          ]);
+                          setStandings(st);
+                          setMatches(lm);
+                        } catch {}
+                      }}
+                    >
+                      <CheckIcon /> Sélectionner
+                    </button>
+                  )}
+                  <button className="btn btn-sm" style={{ padding: "5px 10px", fontSize: "11px" }} onClick={() => handleViewLeague(lg)}>Détails</button>
+                  {lg.status === "pending" && lg.created_by !== user?.id && (
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      style={{ color: "var(--red)", borderColor: "rgba(239, 68, 68, 0.2)", padding: "5px 10px", fontSize: "11px" }}
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (confirm("Are you sure you want to quit this league?")) {
+                          try {
+                            await leaguesApi.quit(lg.id);
+                            setMsg("success:You have quit the league.");
+                            loadAll();
+                          } catch (err: any) {
+                            setMsg("error:" + err.message);
+                          }
+                        }
+                      }}
+                    >
+                      Quit
+                    </button>
+                  )}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <button className="btn btn-sm" style={{ padding: "6px 12px", fontSize: "12px" }} onClick={() => handleViewLeague(lg)}>Details</button>
-                {lg.status === "pending" && lg.created_by !== user?.id && (
-                  <button 
-                    className="btn btn-sm btn-secondary"
-                    style={{ color: "var(--red)", borderColor: "rgba(239, 68, 68, 0.2)", padding: "6px 12px", fontSize: "12px" }}
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      if (confirm("Are you sure you want to quit this league?")) {
-                        try {
-                          await leaguesApi.quit(lg.id);
-                          setMsg("success:You have quit the league.");
-                          loadAll();
-                        } catch (err: any) {
-                          setMsg("error:" + err.message);
-                        }
-                      }
-                    }}
-                  >
-                    Quit
-                  </button>
-                )}
-              </div>
-            </div>
-          )) : (
+            );
+          }) : (
             <p style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center", padding: "20px" }}>You are not in any leagues yet.</p>
           )}
         </div>
@@ -404,13 +443,13 @@ export default function DashboardPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <span style={{ fontWeight: 600, fontSize: "14px" }}>{m.username}</span>
-                        {m.is_lord && <span title="Lord of the Game" style={{ color: "gold", fontSize: "12px" }}>👑</span>}
+                        {m.is_lord && <span title="Lord of the Game" style={{ color: "var(--gold)", display: "flex" }}><CrownIcon /></span>}
                       </div>
                       <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>Joined {new Date(m.joined_at).toLocaleDateString()}</div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(255, 215, 0, 0.1)", padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(255, 215, 0, 0.2)" }}>
-                      <span style={{ color: "gold", fontSize: "12px" }}>🏆</span>
-                      <span style={{ fontWeight: 700, color: "gold", fontSize: "12px" }}>{m.total_trophies || 0}</span>
+                      <span style={{ color: "var(--gold)", display: "flex" }}><TrophyIcon /></span>
+                      <span style={{ fontWeight: 700, color: "var(--gold)", fontSize: "12px" }}>{m.total_trophies || 0}</span>
                     </div>
                   </div>
                 ))}
@@ -450,7 +489,17 @@ export default function DashboardPage() {
               <div className="grid-3">
                 {league.members.map((p: any) => (
                   <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div className="stat-card" style={{ cursor: "pointer", textAlign: "center", padding: "20px 16px" }}>
+                    <div className="stat-card" style={{
+                      cursor: "pointer",
+                      textAlign: "center",
+                      padding: "20px 16px",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+                      transition: "box-shadow 0.2s, transform 0.2s"
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}
+                    >
                       <div className="card-bg-watermark" style={{ fontSize: "40px", opacity: 0.04 }}><UsersIcon /></div>
                       <div className="player-avatar" style={{ width: "44px", height: "44px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
                         {p.avatar_url ? (
@@ -465,7 +514,8 @@ export default function DashboardPage() {
                       </div>
                       <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "4px" }}>{p.username}</div>
                       <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
-                        🏆 {p.total_trophies || 0}{p.is_lord && <span title="Lord" style={{ marginLeft: "4px" }}>👑</span>}
+                        <TrophyIcon /> {p.total_trophies || 0}
+                        {p.is_lord && <span title="Lord" style={{ color: "var(--gold)", display: "flex", marginLeft: "4px" }}><CrownIcon /></span>}
                       </div>
                     </div>
                   </a>
