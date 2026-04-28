@@ -30,7 +30,9 @@ export default function DashboardPage() {
       setPlayers(p);
       setLeagues(l);
       setMyLeagues(ml);
-      const active = l.find((x: any) => x.status === "active");
+      
+      // Active league should be one of MY leagues
+      const active = ml.find((x: any) => x.status === "active");
       if (active) {
         setActiveLeague(active);
         const [st, lm] = await Promise.all([
@@ -102,8 +104,8 @@ export default function DashboardPage() {
         </div>
         <div className="stat-card">
           <div className="card-bg-watermark"><GridIcon /></div>
-          <div className="stat-value green">{leagues.length}</div>
-          <div className="stat-label">Total Leagues</div>
+          <div className="stat-value green">{myLeagues.length}</div>
+          <div className="stat-label">My Leagues</div>
         </div>
         <div className="stat-card">
           <div className="card-bg-watermark"><GamepadIcon /></div>
@@ -300,7 +302,7 @@ export default function DashboardPage() {
 
             <div style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                Platform: <span style={{ color: "var(--text-primary)" }}>{leagues.length} Seasons total</span>
+                Status: <span style={{ color: "var(--text-primary)" }}>{viewingLeague.status.toUpperCase()}</span>
               </div>
               <button onClick={() => setViewingLeague(null)} className="btn btn-primary btn-sm">Close</button>
             </div>

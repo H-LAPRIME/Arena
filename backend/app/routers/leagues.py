@@ -56,10 +56,19 @@ def _require_membership(db: Session, user_id: str, league_id: str) -> League:
 
 @router.get("/", response_model=list[LeagueResponse])
 def get_all_leagues(
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get all leagues (public, shows member count)"""
-    leagues = db.query(League).all()
+    """Get all leagues. Admins see all; users only see theirs."""
+    if current_user.role == "admin":
+        leagues = db.query(League).all()
+    else:
+        leagues = (
+            db.query(League)
+            .join(LeagueMember, League.id == LeagueMember.league_id)
+            .filter(LeagueMember.user_id == current_user.id)
+            .all()
+        )
     return [_league_response(league, db) for league in leagues]
 
 
