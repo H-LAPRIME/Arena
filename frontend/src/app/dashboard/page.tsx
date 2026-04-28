@@ -141,18 +141,18 @@ export default function DashboardPage() {
             borderRadius: "12px",
             background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
             border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
             backdropFilter: "blur(12px)",
             transition: "box-shadow 0.3s, border-color 0.3s",
           }}
             onFocusCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 0 0 2px rgba(37,99,235,0.4), 0 4px 24px rgba(0,0,0,0.3)";
+              el.style.boxShadow = "0 0 0 2px rgba(37,99,235,0.25), 0 2px 12px rgba(0,0,0,0.2)";
               el.style.borderColor = "rgba(37,99,235,0.6)";
             }}
             onBlurCapture={e => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)";
+              el.style.boxShadow = "0 2px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)";
               el.style.borderColor = "rgba(255,255,255,0.12)";
             }}
           >
@@ -198,7 +198,7 @@ export default function DashboardPage() {
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "14px",
               overflow: "hidden",
-              boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(37,99,235,0.15)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(37,99,235,0.1)",
               backdropFilter: "blur(16px)",
               zIndex: 999
             }}>
