@@ -66,50 +66,51 @@ export default function MatchesPage() {
                   <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.7 5.2c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/></svg>
                 </div>
               )}
-              <span className="match-day-badge">MATCH DAY {m.match_day}</span>
+              <span className="match-day-badge" style={{ position: "absolute", top: "12px", left: "16px" }}>MATCH DAY {m.match_day}</span>
+              
               <div className="match-players">
-                <div style={{ textAlign: "center", minWidth: "100px" }}>
-                  <div className="player-avatar" style={{ margin: "0 auto 4px", width: "32px", height: "32px", fontSize: "14px", border: m.home_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden" }}>
+                <div style={{ textAlign: "center", minWidth: "120px" }}>
+                  <div className="player-avatar" style={{ margin: "0 auto 8px", width: "44px", height: "44px", fontSize: "18px", border: m.home_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
                     {m.home_player_avatar ? (
                       <img src={getAvatarUrl(m.home_player_avatar) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       (m.home_player_name || "?")[0].toUpperCase()
                     )}
                   </div>
-                  <span style={{ fontSize: "13px", fontWeight: m.home_player_id === user?.id ? 700 : 600, color: m.home_player_id === user?.id ? "var(--accent)" : "inherit" }}>
+                  <div style={{ fontWeight: m.home_player_id === user?.id ? 800 : 700, fontSize: "15px", color: m.home_player_id === user?.id ? "var(--accent)" : "var(--text-primary)" }}>
                     {m.home_player_name}
-                  </span>
-                  <div style={{ fontSize: "10px", color: "var(--text-muted)" }}><HomeIcon /></div>
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}><HomeIcon /> HOME</div>
                 </div>
 
-                {m.status === "played" ? (
-                  <span className="match-score">{m.home_score} - {m.away_score}</span>
-                ) : (
-                  <span className="match-vs">VS</span>
-                )}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                  {m.status === "played" ? (
+                    <span className="match-score">{m.home_score} - {m.away_score}</span>
+                  ) : (
+                    <span className="match-vs">VS</span>
+                  )}
+                  {m.status === "played" && (
+                    <span className="badge badge-green" style={{ fontSize: "9px", padding: "2px 6px" }}><CheckIcon /> Played</span>
+                  )}
+                  {m.status === "pending" && isMyMatch && (
+                    <button className="btn btn-green btn-sm" style={{ padding: "4px 10px", fontSize: "11px" }}><GamepadIcon /> Play</button>
+                  )}
+                </div>
 
-                <div style={{ textAlign: "center", minWidth: "100px" }}>
-                  <div className="player-avatar" style={{ margin: "0 auto 4px", width: "32px", height: "32px", fontSize: "14px", background: "var(--gradient-green)", border: m.away_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden" }}>
+                <div style={{ textAlign: "center", minWidth: "120px" }}>
+                  <div className="player-avatar" style={{ margin: "0 auto 8px", width: "44px", height: "44px", fontSize: "18px", background: "var(--gradient-green)", border: m.away_player_id === user?.id ? "2px solid var(--accent)" : "", overflow: "hidden", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
                     {m.away_player_avatar ? (
                       <img src={getAvatarUrl(m.away_player_avatar) || ""} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       (m.away_player_name || "?")[0].toUpperCase()
                     )}
                   </div>
-                  <span style={{ fontSize: "13px", fontWeight: m.away_player_id === user?.id ? 700 : 600, color: m.away_player_id === user?.id ? "var(--accent)" : "inherit" }}>
+                  <div style={{ fontWeight: m.away_player_id === user?.id ? 800 : 700, fontSize: "15px", color: m.away_player_id === user?.id ? "var(--accent)" : "var(--text-primary)" }}>
                     {m.away_player_name}
-                  </span>
-                  <div style={{ fontSize: "10px", color: "var(--text-muted)" }}><PlaneIcon /></div>
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}><PlaneIcon /> AWAY</div>
                 </div>
               </div>
-
-              {m.status === "pending" && isMyMatch && (
-                <button className="btn btn-green btn-sm"><GamepadIcon /> Enter</button>
-              )}
-
-              {m.status === "played" && (
-                <span className="badge badge-green"><CheckIcon /> Played</span>
-              )}
             </div>
           );
         })}
