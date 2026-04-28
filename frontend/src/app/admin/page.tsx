@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [userFilterLeague, setUserFilterLeague] = useState<string>("all");
   const [userSortBy, setUserSortBy] = useState<"name" | "date">("name");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [leagueMemberIds, setLeagueMemberIds] = useState<Set<string> | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Modal States
@@ -59,10 +60,8 @@ export default function AdminPage() {
     let result = [...users];
 
     // Filter by League
-    if (userFilterLeague !== "all") {
-      // Since users list doesn't have league info, we might need a different approach or fetch.
-      // But for now, we'll assume we can only sort the full list or we'd need to fetch members.
-      // If user selection is a specific league, we should ideally fetch its members.
+    if (userFilterLeague !== "all" && leagueMemberIds) {
+      result = result.filter(u => leagueMemberIds.has(u.id));
     }
 
     // Sort
@@ -83,23 +82,19 @@ export default function AdminPage() {
     }
 
     setFilteredUsers(result);
-  }, [users, userSortBy, searchTerm]);
+  }, [users, userSortBy, searchTerm, userFilterLeague, leagueMemberIds]);
 
   async function handleLeagueFilterChange(leagueId: string) {
     setUserFilterLeague(leagueId);
     if (leagueId === "all") {
-      setFilteredUsers(users);
+      setLeagueMemberIds(null);
       return;
     }
     try {
       const members = await leaguesApi.getMembers(leagueId);
-      // Members only have basic info, we need to match with users list for full admin info if possible
-      // but usersApi.adminList() already gives us everyone.
-      // We'll filter the full users list by those who are in this league.
-      const memberIds = new Set(members.map((m: any) => m.id));
-      setFilteredUsers(users.filter(u => memberIds.has(u.id)));
+      setLeagueMemberIds(new Set(members.map((m: any) => m.id)));
     } catch (e) {
-      setFilteredUsers([]);
+      setLeagueMemberIds(new Set());
     }
   }
 
