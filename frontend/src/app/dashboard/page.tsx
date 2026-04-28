@@ -9,6 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function DashboardPage() {
   const [players, setPlayers] = useState<any[]>([]);
+  const [groupedPlayers, setGroupedPlayers] = useState<any[]>([]);
   const [leagues, setLeagues] = useState<any[]>([]);
   const [myLeagues, setMyLeagues] = useState<any[]>([]);
   const [standings, setStandings] = useState<any[]>([]);
@@ -29,10 +30,16 @@ export default function DashboardPage() {
 
   async function loadAll() {
     try {
-      const [p, l, ml] = await Promise.all([usersApi.getAll(), leaguesApi.getAll(), leaguesApi.getMy()]);
+      const [p, l, ml, gp] = await Promise.all([
+        usersApi.getAll(), 
+        leaguesApi.getAll(), 
+        leaguesApi.getMy(),
+        usersApi.getGroupedByLeague()
+      ]);
       setPlayers(p);
       setLeagues(l);
       setMyLeagues(ml);
+      setGroupedPlayers(gp);
       
       // Active league should be one of MY leagues
       const active = ml.find((x: any) => x.status === "active");
@@ -414,36 +421,56 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Players List */}
+      {/* Players List Grouped by League */}
       <div className="card" style={{ marginTop: "24px" }}>
         <div className="card-bg-watermark"><UsersIcon /></div>
         <div className="card-header">
-          <span className="card-title"><UsersIcon /> Players</span>
+          <span className="card-title"><UsersIcon /> Players Organization</span>
           {user?.role === "admin" && (
             <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>
           )}
         </div>
-        <div className="grid-3">
-          {players.map((p: any) => (
-            <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="stat-card" style={{ cursor: "pointer" }}>
-                <div className="player-avatar" style={{ width: "56px", height: "56px", fontSize: "24px", margin: "0 auto 12px", overflow: "hidden" }}>
-                  {p.avatar_url ? (
-                    <img 
-                      src={getAvatarUrl(p.avatar_url) || ""} 
-                      alt="Avatar" 
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                    />
-                  ) : (
-                    p.username[0].toUpperCase()
-                  )}
-                </div>
-                <div style={{ fontWeight: 700, fontSize: "16px" }}>{p.username}</div>
-                <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                  {p.total_titles} titles {p.is_lord && <TrophyIcon />}
-                </div>
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px", padding: "12px" }}>
+          {groupedPlayers.map((league: any) => (
+            <div key={league.league_id} style={{ 
+              background: "rgba(255,255,255,0.02)", 
+              borderRadius: "16px", 
+              padding: "20px",
+              border: "1px solid rgba(255,255,255,0.05)"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+                <h3 style={{ fontSize: "16px", color: "var(--accent-light)", margin: 0 }}>
+                  {league.league_name}
+                </h3>
+                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                  {league.members.length} members
+                </span>
               </div>
-            </a>
+              <div className="grid-3">
+                {league.members.map((p: any) => (
+                  <a href={`/players/${p.id}`} key={p.id} style={{ textDecoration: "none", color: "inherit" }}>
+                    <div className="stat-card" style={{ cursor: "pointer", background: "rgba(0,0,0,0.2)", padding: "16px" }}>
+                      <div className="player-avatar" style={{ width: "40px", height: "40px", fontSize: "18px", margin: "0 auto 10px", overflow: "hidden" }}>
+                        {p.avatar_url ? (
+                          <img 
+                            src={getAvatarUrl(p.avatar_url) || ""} 
+                            alt="Avatar" 
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                          />
+                        ) : (
+                          p.username[0].toUpperCase()
+                        )}
+                      </div>
+                      <div style={{ fontWeight: 600, fontSize: "14px" }}>{p.username}</div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {p.total_titles || 0} titles {p.is_lord && <TrophyIcon />}
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
