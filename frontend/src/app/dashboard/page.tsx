@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [botMessage, setBotMessage] = useState("");
   const [viewingLeague, setViewingLeague] = useState<any>(null);
   const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => { loadAll(); }, []);
 
@@ -447,7 +447,7 @@ export default function DashboardPage() {
         <div className="card-bg-watermark"><UsersIcon /></div>
         <div className="card-header">
           <span className="card-title"><UsersIcon /> Players Organization</span>
-          {user?.role === "admin" && (
+          {isAdmin && (
             <a href="/register" className="btn btn-sm btn-secondary"><PlusIcon /> Add</a>
           )}
         </div>
