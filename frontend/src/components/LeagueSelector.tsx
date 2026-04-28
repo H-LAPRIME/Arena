@@ -18,16 +18,19 @@ export default function LeagueSelector({ onSelect, selectedId, autoSelectIfOnlyO
       setLeagues(data);
       setLoading(false);
       
-      // Auto-select logic
-      if (autoSelectIfOnlyOne && data.length === 1 && !selectedId) {
+      // Auto-select logic: if only one league, always make it default
+      if (data.length === 1 && !selectedId) {
         onSelect(data[0].id);
       }
     }).catch(() => setLoading(false));
   }, [onSelect, autoSelectIfOnlyOne, selectedId]);
 
-  // Auto-select the single league silently — no UI shown
-  if (autoSelectIfOnlyOne && leagues.length === 1) {
-    return null; // already called onSelect in useEffect
+  if (loading) return null;
+  if (leagues.length === 0) return <div className="card" style={{ textAlign: "center", padding: "20px" }}>Vous n'êtes membre d'aucune ligue active.</div>;
+
+  // If only one league exists, we auto-select in useEffect and show nothing here
+  if (leagues.length === 1) {
+    return null;
   }
 
   // If already selected and only one league, show nothing (auto-selected)
