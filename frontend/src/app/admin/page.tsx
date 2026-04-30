@@ -39,7 +39,7 @@ export default function AdminPage() {
     if (!isLoading && !isAdmin) router.replace("/dashboard");
   }, [isAdmin, isLoading, router]);
 
-  useEffect(() => { if (isAdmin) loadAll(); }, [isAdmin, statusFilter]);
+  useEffect(() => { if (isAdmin) loadAll(); }, [isAdmin]);
 
   // Tab Switch Reset
   useEffect(() => { setSearchTerm(""); }, [tab]);
@@ -47,7 +47,7 @@ export default function AdminPage() {
   async function loadAll() {
     try {
       const [c, u, m, s] = await Promise.all([
-        claimsApi.getAll(statusFilter || undefined),
+        claimsApi.getAll(),
         usersApi.adminList(),
         matchesApi.getAll(),
         leaguesApi.getAll(),
@@ -235,6 +235,11 @@ export default function AdminPage() {
             {t === "matches" && <GamepadIcon />}
             {t === "seasons" && <CalendarIcon />}
             {t === "claims" ? "Claims" : t === "users" ? "Players" : t === "matches" ? "Matches" : "Seasons"}
+            {t === "claims" && claims.filter(c => c.status === "pending").length > 0 && (
+              <span style={{ background: "var(--red)", color: "white", fontSize: "10px", padding: "1px 6px", borderRadius: "10px", marginLeft: "4px" }}>
+                {claims.filter(c => c.status === "pending").length}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -257,25 +262,32 @@ export default function AdminPage() {
               />
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
-              {["pending", "approved", "rejected", ""].map(s => (
-                <button key={s || "all"} onClick={() => setStatusFilter(s)} className="btn btn-sm" style={{
-                  background: statusFilter === s ? "var(--accent-glow)" : "transparent",
-                  color: statusFilter === s ? "var(--accent-light)" : "var(--text-muted)",
-                  border: `1px solid ${statusFilter === s ? "var(--border-accent)" : "var(--border)"}`,
-                }}>
-                  {s || "All"}
-                </button>
-              ))}
+              {["pending", "approved", "rejected", ""].map(s => {
+                const count = s === "" ? claims.length : claims.filter(c => c.status === s).length;
+                return (
+                  <button key={s || "all"} onClick={() => setStatusFilter(s)} className="btn btn-sm" style={{
+                    background: statusFilter === s ? "var(--accent-glow)" : "transparent",
+                    color: statusFilter === s ? "var(--accent-light)" : "var(--text-muted)",
+                    border: `1px solid ${statusFilter === s ? "var(--border-accent)" : "var(--border)"}`,
+                    display: "flex", alignItems: "center", gap: "6px"
+                  }}>
+                    {s || "All"}
+                    <span style={{ fontSize: "10px", opacity: 0.7, background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: "4px" }}>{count}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           {claims.length === 0 ? <p style={{ textAlign: "center", color: "var(--text-muted)", padding: "40px", fontSize: "14px" }}>No claims</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {claims
-                .filter((c: any) => 
-                  c.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                  c.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  c.claimant_username.toLowerCase().includes(searchTerm.toLowerCase())
-                )
+                .filter((c: any) => {
+                  const matchesSearch = c.home_player_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                      c.away_player_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                      c.claimant_username.toLowerCase().includes(searchTerm.toLowerCase());
+                  const matchesStatus = statusFilter === "" || c.status === statusFilter;
+                  return matchesSearch && matchesStatus;
+                })
                 .map((c: any) => (
                 <div key={c.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "12px", padding: "18px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
                   <div style={{ flexShrink: 0 }}>
@@ -301,7 +313,19 @@ export default function AdminPage() {
                         Requested by <strong>{c.claimant_username}</strong>
                       </span>
                     </div>
-                    {c.admin_note && <p style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "8px" }}>Note: {c.admin_note}</p>}
+                    {c.status !== "pending" && (
+                      <div style={{ fontSize: "12px", color: "var(--text-muted)", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "8px", marginBottom: "8px", border: "1px solid var(--border)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <span style={{ fontWeight: 600 }}>Review Details</span>
+                          <span>{new Date(c.reviewed_at).toLocaleDateString()} at {new Date(c.reviewed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        {c.admin_note ? (
+                          <p style={{ margin: 0, fontStyle: "italic", color: "var(--text-secondary)" }}>"{c.admin_note}"</p>
+                        ) : (
+                          <p style={{ margin: 0, opacity: 0.5 }}>No note provided</p>
+                        )}
+                      </div>
+                    )}
                     {c.status === "pending" && (
                       <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                         <input placeholder="Note" value={noteMap[c.id] || ""} onChange={e => setNoteMap(p => ({ ...p, [c.id]: e.target.value }))} style={{ flex: 1, padding: "7px 12px", background: "rgba(0,0,0,0.04)", border: "1px solid var(--border)", borderRadius: "6px", color: "var(--text-primary)" }} />
