@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { claimsApi, leaguesApi, matchesApi } from "@/lib/api";
+import { claimsApi, leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ShieldIcon, TrophyIcon, HandshakeIcon, CheckIcon, TrashIcon } from "@/components/Icons";
 import LeagueSelector from "@/components/LeagueSelector";
@@ -351,8 +351,8 @@ function ClaimsContent() {
                 </div>
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                   {c.screenshot_url && (
-                    <a href={`${API_URL}${c.screenshot_url}`} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (isSelectMode) e.preventDefault(); }}>
-                      <img src={`${API_URL}${c.screenshot_url}`} alt="proof" style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }} />
+                    <a href={getAvatarUrl(c.screenshot_url) || "#"} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (isSelectMode) e.preventDefault(); }}>
+                      <img src={getAvatarUrl(c.screenshot_url) || ""} alt="proof" style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }} />
                     </a>
                   )}
                 </div>

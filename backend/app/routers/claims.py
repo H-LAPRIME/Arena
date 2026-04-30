@@ -77,22 +77,29 @@ async def submit_claim(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Screenshot must be under 10 MB")
 
-    # Upload to Supabase
+    # Upload
     try:
-        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-        filename = f"{current_user.id}_{match_id}_{uuid.uuid4().hex[:8]}{ext}"
-        
-        # Upload
-        supabase.storage.from_("claims").upload(
-            path=filename,
-            file=content,
-            file_options={"content-type": screenshot.content_type}
-        )
-        
-        # Public URL
-        screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+        if settings.SUPABASE_URL and settings.SUPABASE_SERVICE_ROLE_KEY:
+            supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+            filename = f"{current_user.id}_{match_id}_{uuid.uuid4().hex[:8]}{ext}"
+            
+            supabase.storage.from_("claims").upload(
+                path=filename,
+                file=content,
+                file_options={"content-type": screenshot.content_type}
+            )
+            screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+        else:
+            # Local Fallback
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+            filename = f"claim_{current_user.id}_{match_id}_{uuid.uuid4().hex[:8]}{ext}"
+            file_path = os.path.join(settings.UPLOAD_DIR, filename)
+            with open(file_path, "wb") as f:
+                f.write(content)
+            screenshot_url = f"/uploads/{filename}"
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
+        print(f"UPLOAD ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload screenshot: {str(e)}")
 
     # Determine result and points automatically
     is_home = (current_user.id == match.home_player_id)
@@ -182,22 +189,29 @@ async def update_claim_image(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="Screenshot must be under 10 MB")
 
-    # Upload to Supabase
+    # Upload
     try:
-        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-        filename = f"{current_user.id}_{claim.match_id}_upd_{uuid.uuid4().hex[:8]}{ext}"
-        
-        # Upload
-        supabase.storage.from_("claims").upload(
-            path=filename,
-            file=content,
-            file_options={"content-type": screenshot.content_type}
-        )
-        
-        # Public URL
-        claim.screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+        if settings.SUPABASE_URL and settings.SUPABASE_SERVICE_ROLE_KEY:
+            supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+            filename = f"{current_user.id}_{claim.match_id}_upd_{uuid.uuid4().hex[:8]}{ext}"
+            
+            supabase.storage.from_("claims").upload(
+                path=filename,
+                file=content,
+                file_options={"content-type": screenshot.content_type}
+            )
+            claim.screenshot_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/claims/{filename}"
+        else:
+            # Local Fallback
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+            filename = f"claim_{current_user.id}_{claim.match_id}_upd_{uuid.uuid4().hex[:8]}{ext}"
+            file_path = os.path.join(settings.UPLOAD_DIR, filename)
+            with open(file_path, "wb") as f:
+                f.write(content)
+            claim.screenshot_url = f"/uploads/{filename}"
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
+        print(f"UPLOAD ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload screenshot: {str(e)}")
     db.commit()
     db.refresh(claim)
     return _build_response(claim, db)

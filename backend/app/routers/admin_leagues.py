@@ -477,31 +477,41 @@ async def update_user_avatar(
     file_ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
     filename = f"avatar_{user.id}_{uuid.uuid4().hex[:8]}.{file_ext}"
     
-    # 2. Upload to Supabase
+    # Upload
     try:
-        from supabase import create_client, Client
-        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-        
-        # Read file content
-        file_content = await file.read()
-        
-        # Upload
-        supabase.storage.from_("avatars").upload(
-            path=filename,
-            file=file_content,
-            file_options={"content-type": file.content_type}
-        )
-        
-        # 3. Get Public URL
-        public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/avatars/{filename}"
-        
+        if settings.SUPABASE_URL and settings.SUPABASE_SERVICE_ROLE_KEY:
+            from supabase import create_client, Client
+            supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+            
+            # Read file content
+            file_content = await file.read()
+            
+            # Upload
+            supabase.storage.from_("avatars").upload(
+                path=filename,
+                file=file_content,
+                file_options={"content-type": file.content_type}
+            )
+            
+            # Public URL
+            public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/avatars/{filename}"
+        else:
+            # Local Fallback
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+            file_content = await file.read()
+            file_path = os.path.join(settings.UPLOAD_DIR, filename)
+            with open(file_path, "wb") as f:
+                f.write(file_content)
+            public_url = f"/uploads/{filename}"
+            
         user.avatar_url = public_url
         db.commit()
         
         return {"avatar_url": user.avatar_url}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload to Cloud: {str(e)}")
+        print(f"UPLOAD ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload avatar: {str(e)}")
 
 
 # ── League standings (admin view) ──────────────────────────────────────────────

@@ -279,7 +279,7 @@ export default function AdminPage() {
                 .map((c: any) => (
                 <div key={c.id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid var(--border)", borderRadius: "12px", padding: "18px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
                   <div style={{ flexShrink: 0 }}>
-                    {c.screenshot_url ? <a href={`${API_URL}${c.screenshot_url}`} target="_blank" rel="noopener noreferrer"><img src={`${API_URL}${c.screenshot_url}`} alt="proof" style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "8px", border: "1px solid var(--border)" }} /></a> : <div style={{ width: "80px", height: "60px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "12px" }}>No proof</div>}
+                    {c.screenshot_url ? <a href={getAvatarUrl(c.screenshot_url) || "#"} target="_blank" rel="noopener noreferrer"><img src={getAvatarUrl(c.screenshot_url) || ""} alt="proof" style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "8px", border: "1px solid var(--border)" }} /></a> : <div style={{ width: "80px", height: "60px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", fontSize: "12px" }}>No proof</div>}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap", width: "100%" }}>
