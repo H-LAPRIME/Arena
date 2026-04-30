@@ -417,7 +417,7 @@ export default function AdminPage() {
                   })
                   .map((m: any) => (
                   <tr key={m.id}>
-                    <td>{m.league_id}</td>
+                    <td>{seasons.find(s => s.id === m.league_id)?.name || m.league_id}</td>
                     <td>J{m.match_day}</td>
                     <td>{m.home_player_name}</td>
                     <td>{m.away_player_name}</td>
