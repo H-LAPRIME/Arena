@@ -401,9 +401,6 @@ export default function AdminPage() {
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
                     <td><span className={u.role === "admin" ? "badge badge-gold" : "badge"}>{u.role}</span></td>
                     <td>
-                      <Link href={`/players/${u.id}`} className="btn btn-sm btn-secondary" style={{ marginRight: "4px" }}>
-                        <UserIcon /> Profile
-                      </Link>
                       <button onClick={() => { setEditingUser(u); setIsUserModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
                       {u.role !== "admin" && <button onClick={() => handleDeleteUser(u.id)} className="btn btn-danger btn-sm"><TrashIcon /></button>}
                     </td>
