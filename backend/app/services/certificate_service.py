@@ -4,6 +4,7 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from fpdf import FPDF
 from typing import List, Dict, Any
+import requests
 
 class CertificateService:
     def __init__(self):
@@ -149,6 +150,103 @@ class CertificateService:
             pdf.cell(0, 10, "No major highlights recorded yet.", ln=True)
         for h in highlights:
             pdf.cell(0, 8, f"- {h}", ln=True)
+
+        return bytes(pdf.output())
+    
+    def generate_player_profile_pdf(self, username: str, stats: Dict[str, Any], avatar_url: str = None) -> bytes:
+        """Generate a complete player profile report with stats and photo."""
+        pdf = FPDF()
+        pdf.add_page()
+        
+        # Header - Modern Dark Theme
+        pdf.set_fill_color(10, 10, 30)
+        pdf.rect(0, 0, 210, 50, 'F')
+        
+        # Add Avatar if provided
+        if avatar_url:
+            try:
+                # Handle relative URLs
+                if avatar_url.startswith("/uploads/"):
+                    # This is tricky if running in container, but usually settings.UPLOAD_DIR is local
+                    # For now, let's assume absolute URL or we skip it if it fails
+                    pass 
+                
+                if avatar_url.startswith("http"):
+                    resp = requests.get(avatar_url, timeout=5)
+                    if resp.status_code == 200:
+                        img_data = io.BytesIO(resp.content)
+                        pdf.image(img_data, 10, 10, 30, 30)
+            except Exception as e:
+                print(f"PDF Avatar Error: {e}")
+
+        pdf.set_xy(50, 15)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Arial", 'B', 28)
+        pdf.cell(0, 15, f"{username.upper()}", ln=True)
+        pdf.set_xy(50, 30)
+        pdf.set_font("Arial", '', 14)
+        pdf.cell(0, 10, "OFFICIAL ARENA PLAYER CARD", ln=True)
+        
+        pdf.ln(25)
+        pdf.set_text_color(0, 0, 0)
+        
+        # Summary Row
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, "Career Statistics", ln=True)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(5)
+        
+        # Grid of stats
+        pdf.set_font("Arial", 'B', 12)
+        col_w = 45
+        pdf.cell(col_w, 10, "Matches", border=1, align='C')
+        pdf.cell(col_w, 10, "Wins", border=1, align='C')
+        pdf.cell(col_w, 10, "Draws", border=1, align='C')
+        pdf.cell(col_w, 10, "Losses", border=1, align='C', ln=True)
+        
+        pdf.set_font("Arial", '', 12)
+        pdf.cell(col_w, 10, str(stats.get('total_played', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, str(stats.get('total_wins', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, str(stats.get('total_draws', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, str(stats.get('total_losses', 0)), border=1, align='C', ln=True)
+        
+        pdf.ln(5)
+        
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(col_w, 10, "Goals For", border=1, align='C')
+        pdf.cell(col_w, 10, "Goals Ag.", border=1, align='C')
+        pdf.cell(col_w, 10, "Goal Diff", border=1, align='C')
+        pdf.cell(col_w, 10, "Win Rate", border=1, align='C', ln=True)
+        
+        pdf.set_font("Arial", '', 12)
+        pdf.cell(col_w, 10, str(stats.get('goals_for', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, str(stats.get('goals_against', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, str(stats.get('goal_difference', 0)), border=1, align='C')
+        pdf.cell(col_w, 10, f"{stats.get('win_rate', 0)}%", border=1, align='C', ln=True)
+        
+        pdf.ln(15)
+        
+        # Achievements Section
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, "Achievements & Honors", ln=True)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.ln(5)
+        
+        pdf.set_font("Arial", '', 12)
+        pdf.cell(0, 10, f"Total Titles Won: {stats.get('total_titles', 0)}", ln=True)
+        if stats.get('is_lord'):
+            pdf.set_font("Arial", 'B', 12)
+            pdf.set_text_color(184, 134, 11)
+            pdf.cell(0, 10, "RANK: LORD OF THE GAME", ln=True)
+            pdf.set_text_color(0, 0, 0)
+        
+        pdf.ln(10)
+        
+        # Footer
+        pdf.set_y(-30)
+        pdf.set_font("Arial", 'I', 10)
+        pdf.set_text_color(150, 150, 150)
+        pdf.cell(0, 10, f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - E-Football Arena Official Document", align='C')
 
         return bytes(pdf.output())
 

@@ -132,3 +132,55 @@ async def get_performance_report(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@router.get("/player/{user_id}")
+async def get_player_report(
+    user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Download a global profile report for any player (Admin only or own)."""
+    if current_user.role != "admin" and str(current_user.id) != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to download this report")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch all-time stats (similar logic to users.py get_my_profile)
+    from app.models.league_member import LeagueMember
+    all_standings = db.query(Standing).filter(Standing.user_id == user.id).all()
+    
+    total_played = sum(s.played for s in all_standings)
+    total_wins = sum(s.wins for s in all_standings)
+    total_draws = sum(s.draws for s in all_standings)
+    total_losses = sum(s.losses for s in all_standings)
+    goals_for = sum(s.goals_for for s in all_standings)
+    goals_against = sum(s.goals_against for s in all_standings)
+    
+    total_titles = db.query(League).filter(League.champion_id == user.id).count()
+    win_rate = round((total_wins / total_played * 100), 1) if total_played > 0 else 0
+    
+    stats_dict = {
+        "total_played": total_played,
+        "total_wins": total_wins,
+        "total_draws": total_draws,
+        "total_losses": total_losses,
+        "goals_for": goals_for,
+        "goals_against": goals_against,
+        "goal_difference": goals_for - goals_against,
+        "total_titles": total_titles,
+        "win_rate": win_rate,
+        "is_lord": user.is_lord
+    }
+
+    pdf_content = certificate_service.generate_player_profile_pdf(
+        user.username, stats_dict, user.avatar_url
+    )
+    
+    filename = f"Profile_{user.username}.pdf"
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

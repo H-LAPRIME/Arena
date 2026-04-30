@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { usersApi, statsApi, getAvatarUrl } from "@/lib/api";
+import { usersApi, statsApi, getAvatarUrl, certificatesApi } from "@/lib/api";
 import { useParams } from "next/navigation";
-import { UsersIcon, TrophyIcon, GamepadIcon, ZapIcon, HomeIcon, PlaneIcon, CheckIcon } from "@/components/Icons";
+import { useAuth } from "@/lib/auth";
+import { UsersIcon, TrophyIcon, GamepadIcon, ZapIcon, HomeIcon, PlaneIcon, CheckIcon, DownloadIcon } from "@/components/Icons";
 
 export default function PlayerDetailPage() {
   const params = useParams();
+  const { user, isAdmin } = useAuth();
   const [player, setPlayer] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const id = params.id as string;
@@ -17,6 +20,19 @@ export default function PlayerDetailPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [params.id]);
+
+  const handleDownload = async () => {
+    if (!player) return;
+    setIsDownloading(true);
+    try {
+      await certificatesApi.downloadPlayerReport(player.id, player.username);
+    } catch (error) {
+      console.error("Failed to download report", error);
+      alert("Erreur lors du téléchargement du rapport.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (loading) return <div className="loading-spinner"><div className="spinner"></div></div>;
   if (!player) return <div className="page-container"><p>Joueur non trouvé</p></div>;
@@ -34,10 +50,20 @@ export default function PlayerDetailPage() {
         <div style={{ flex: 1, textAlign: "left", position: "relative", zIndex: 1 }}>
           <h1 className="page-title" style={{ fontSize: "42px", marginBottom: "8px", lineHeight: "1.1", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>{player.username}</h1>
           {player.is_lord && <div className="lord-badge" style={{ display: "inline-flex", marginBottom: "16px", fontSize: "14px" }}>🏆 LORD OF THE GAME</div>}
-          <div style={{ display: "flex", justifyContent: "flex-start", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "8px", marginTop: "12px", flexWrap: "wrap", alignItems: "center" }}>
             {(player.badges || []).map((b: any) => (
               <span key={b.id} className="badge" style={{ padding: "6px 12px", fontSize: "13px" }}>{b.icon} {b.badge_name}</span>
             ))}
+            {(isAdmin || (user && user.id === player.id)) && (
+              <button 
+                onClick={handleDownload} 
+                disabled={isDownloading}
+                className="btn btn-sm btn-secondary" 
+                style={{ marginLeft: "8px", padding: "6px 12px", height: "auto" }}
+              >
+                <DownloadIcon /> {isDownloading ? "Téléchargement..." : "Download Report"}
+              </button>
+            )}
           </div>
         </div>
 

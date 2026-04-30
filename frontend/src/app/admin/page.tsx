@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { claimsApi, usersApi, matchesApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, CheckIcon, PlusIcon, TrashIcon } from "@/components/Icons";
+import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, CheckIcon, PlusIcon, TrashIcon, UserIcon } from "@/components/Icons";
+import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -388,18 +389,21 @@ export default function AdminPage() {
                   <tr key={u.id}>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <div className="player-avatar" style={{ width: "28px", height: "28px", fontSize: "11px", flexShrink: 0 }}>
+                        <Link href={`/players/${u.id}`} className="player-avatar" style={{ width: "28px", height: "28px", fontSize: "11px", flexShrink: 0, textDecoration: "none" }}>
                           {u.avatar_url ? (
                             <img src={getAvatarUrl(u.avatar_url) || ""} alt="Avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
                           ) : u.username[0].toUpperCase()}
-                        </div>
-                        <span className="player-name">{u.username}</span> 
+                        </Link>
+                        <Link href={`/players/${u.id}`} className="player-name" style={{ color: "var(--text-primary)", fontWeight: 600, textDecoration: "none" }}>{u.username}</Link> 
                         {!u.is_active && <span className="badge badge-danger" style={{ fontSize: "9px", padding: "1px 5px" }}>Inactive</span>}
                       </div>
                     </td>
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
                     <td><span className={u.role === "admin" ? "badge badge-gold" : "badge"}>{u.role}</span></td>
                     <td>
+                      <Link href={`/players/${u.id}`} className="btn btn-sm btn-secondary" style={{ marginRight: "4px" }}>
+                        <UserIcon /> Profile
+                      </Link>
                       <button onClick={() => { setEditingUser(u); setIsUserModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
                       {u.role !== "admin" && <button onClick={() => handleDeleteUser(u.id)} className="btn btn-danger btn-sm"><TrashIcon /></button>}
                     </td>

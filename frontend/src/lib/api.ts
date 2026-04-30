@@ -179,6 +179,8 @@ export const certificatesApi = {
     certificatesApi.downloadFile(`/api/certificates/lord`, `Lord_of_the_Arena.pdf`),
   downloadReport: (leagueId: string, leagueName: string, username: string) => 
     certificatesApi.downloadFile(`/api/certificates/report/${leagueId}`, `Report_${leagueName}_${username}.pdf`),
+  downloadPlayerReport: (userId: string, username: string) => 
+    certificatesApi.downloadFile(`/api/certificates/player/${userId}`, `Profile_${username}.pdf`),
 };
 
 // Stats
