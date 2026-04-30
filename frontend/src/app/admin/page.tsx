@@ -19,6 +19,7 @@ export default function AdminPage() {
   const [seasons, setSeasons] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("pending");
   const [noteMap, setNoteMap] = useState<Record<string, string>>({});
+  const [modalError, setModalError] = useState("");
   const [msg, setMsg] = useState("");
   const [userFilterLeague, setUserFilterLeague] = useState<string>("all");
   const [userSortBy, setUserSortBy] = useState<"name" | "date">("name");
@@ -115,6 +116,27 @@ export default function AdminPage() {
   // User Actions
   async function handleSaveUser(e: React.FormEvent) {
     e.preventDefault();
+    setModalError("");
+    
+    // Validation
+    if (!editingUser.username || editingUser.username.length < 3) {
+      setModalError("Username must be at least 3 characters");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!editingUser.email || !emailRegex.test(editingUser.email)) {
+      setModalError("Please enter a valid email address");
+      return;
+    }
+    if (!editingUser.id && (!editingUser.password || editingUser.password.length < 6)) {
+      setModalError("Password must be at least 6 characters for new accounts");
+      return;
+    }
+    if (editingUser.id && editingUser.password && editingUser.password.length > 0 && editingUser.password.length < 6) {
+      setModalError("New password must be at least 6 characters");
+      return;
+    }
+
     try {
       if (editingUser.id) {
         await usersApi.adminUpdate(editingUser.id, editingUser);
@@ -125,7 +147,9 @@ export default function AdminPage() {
       }
       setIsUserModalOpen(false);
       loadAll();
-    } catch (err: any) { setMsg("error:" + err.message); }
+    } catch (err: any) { 
+      setModalError(err.message || "Operation failed");
+    }
   }
   async function handleDeleteUser(id: string) {
     if(!confirm("DELETE THIS PLAYER COMPLETELY FROM DATABASE? This action is IRREVERSIBLE and will delete all their data!")) return;
@@ -376,7 +400,7 @@ export default function AdminPage() {
                 <option value="name">Sort: Name (A-Z)</option>
                 <option value="date">Sort: Newest First</option>
               </select>
-              <button onClick={() => { setEditingUser({}); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
+              <button onClick={() => { setEditingUser({}); setModalError(""); setIsUserModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Player</button>
             </div>
           </div>
           <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
@@ -401,7 +425,7 @@ export default function AdminPage() {
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
                     <td><span className={u.role === "admin" ? "badge badge-gold" : "badge"}>{u.role}</span></td>
                     <td>
-                      <button onClick={() => { setEditingUser(u); setIsUserModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
+                      <button onClick={() => { setEditingUser(u); setModalError(""); setIsUserModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
                       {u.role !== "admin" && <button onClick={() => handleDeleteUser(u.id)} className="btn btn-danger btn-sm"><TrashIcon /></button>}
                     </td>
                   </tr>
@@ -425,7 +449,7 @@ export default function AdminPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button onClick={() => { setEditingMatch({}); setIsMatchModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Match</button>
+            <button onClick={() => { setEditingMatch({}); setModalError(""); setIsMatchModalOpen(true); }} className="btn btn-sm btn-secondary"><PlusIcon /> Add Match</button>
           </div>
           <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
             <table className="admin-table">
@@ -449,7 +473,7 @@ export default function AdminPage() {
                     <td style={{ fontWeight: 700 }}>{m.home_score !== null ? `${m.home_score} - ${m.away_score}` : "-"}</td>
                     <td><span className={m.status === "played" ? "badge badge-green" : "badge"}>{m.status}</span></td>
                     <td>
-                      <button onClick={() => { setEditingMatch(m); setIsMatchModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
+                      <button onClick={() => { setEditingMatch(m); setModalError(""); setIsMatchModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
                       <button onClick={() => handleDeleteMatch(m.id)} className="btn btn-danger btn-sm"><TrashIcon /></button>
                     </td>
                   </tr>
@@ -504,7 +528,7 @@ export default function AdminPage() {
                     </td>
                     <td><span className={s.status === "active" ? "badge badge-green" : s.status === "completed" ? "badge badge-gold" : "badge"}>{s.status}</span></td>
                     <td>
-                      <button onClick={() => { setEditingSeason(s); setIsSeasonModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
+                      <button onClick={() => { setEditingSeason(s); setModalError(""); setIsSeasonModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
                       <button onClick={() => handleDeleteSeason(s.id)} className="btn btn-danger btn-sm"><TrashIcon /></button>
                     </td>
                   </tr>
@@ -520,6 +544,13 @@ export default function AdminPage() {
         <div className="modal-overlay">
           <div className="modal-content card">
             <h2>{editingUser?.id ? "Edit" : "Create"} Player</h2>
+            
+            {modalError && (
+              <div style={{ marginTop: "12px", padding: "10px 14px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "8px", color: "var(--red)", fontSize: "13px" }}>
+                {modalError}
+              </div>
+            )}
+
             <form onSubmit={handleSaveUser} style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
               {editingUser?.id && (
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", padding: "10px", background: "rgba(0,0,0,0.02)", borderRadius: "8px" }}>
@@ -592,6 +623,11 @@ export default function AdminPage() {
         <div className="modal-overlay">
           <div className="modal-content card">
             <h2>{editingMatch?.id ? "Edit" : "Create"} Match</h2>
+            {modalError && (
+              <div style={{ marginTop: "12px", padding: "10px 14px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "8px", color: "var(--red)", fontSize: "13px" }}>
+                {modalError}
+              </div>
+            )}
             <form onSubmit={handleSaveMatch} style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
               <select required value={editingMatch?.league_id || ""} onChange={e => setEditingMatch({ ...editingMatch, league_id: e.target.value })} className="input-field" style={{ background: "var(--bg-dark)" }}>
                 <option value="">Select League</option>
