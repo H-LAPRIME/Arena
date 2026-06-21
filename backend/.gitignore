@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# Database
+*.sqlite3
+*.db
+efootball_arena.db
+
+# Uploads
+uploads/
+
+# IDEs
+.idea/
+.vscode/
