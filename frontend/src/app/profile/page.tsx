@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [msg, setMsg] = useState("");
+  const [whatsappPhone, setWhatsappPhone] = useState(user?.whatsapp_phone || "");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -119,6 +120,7 @@ export default function ProfilePage() {
     try {
       const updated = await usersApi.updateProfile({ 
         username: newUsername !== user?.username ? newUsername : undefined,
+        whatsapp_phone: whatsappPhone.trim() || null,
         password: newPassword || undefined,
         old_password: newPassword ? oldPassword : undefined
       });
@@ -174,7 +176,10 @@ export default function ProfilePage() {
           <p style={{ color: "var(--text-muted)", fontSize: "16px", marginBottom: "24px" }}>{user.email}</p>
           
           <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
-            <button onClick={() => setIsModalOpen(true)} className="btn btn-secondary" style={{ borderRadius: "var(--radius-full)", padding: "8px 20px" }}>
+            <button onClick={() => {
+              setWhatsappPhone(user.whatsapp_phone || "");
+              setIsModalOpen(true);
+            }} className="btn btn-secondary" style={{ borderRadius: "var(--radius-full)", padding: "8px 20px" }}>
               <SettingsIcon /> Account Settings
             </button>
             {user.is_lord && <span className="lord-badge" style={{ padding: "8px 20px" }}><TrophyIcon /> LORD OF THE GAME</span>}
@@ -401,6 +406,20 @@ export default function ProfilePage() {
               <div className="form-group">
                 <label className="form-label">Username</label>
                 <input className="form-input" value={newUsername} onChange={e => setNewUsername(e.target.value)} />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">WhatsApp number</label>
+                <input
+                  className="form-input"
+                  value={whatsappPhone}
+                  onChange={e => setWhatsappPhone(e.target.value.replace(/\D/g, ""))}
+                  placeholder="212612345678"
+                  inputMode="numeric"
+                />
+                <p style={{ marginTop: "6px", fontSize: "12px", color: "var(--text-muted)" }}>
+                  Country code + number, digits only.
+                </p>
               </div>
               
               <div style={{ padding: "16px", background: "var(--bg)", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>

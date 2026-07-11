@@ -11,6 +11,7 @@ export interface AuthUser {
   total_titles: number;
   is_lord: boolean;
   is_active: boolean;
+  whatsapp_phone?: string | null;
   created_at: string;
 }
 

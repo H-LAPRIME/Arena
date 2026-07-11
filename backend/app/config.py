@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_MINUTES: int = 1440  # 24 hours
 
+    # WhatsApp bot
+    BOT_SHARED_SECRET: str = ""
+
     # Mistral AI
     MISTRAL_API_KEY: str = ""
 

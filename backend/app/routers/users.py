@@ -240,6 +240,21 @@ def update_my_profile(
         if existing and existing.id != current_user.id:
             raise HTTPException(status_code=400, detail="Username already taken")
         current_user.username = data["username"]
+
+    if "whatsapp_phone" in data:
+        phone = (data["whatsapp_phone"] or "").strip()
+        if phone:
+            if not phone.isdigit():
+                raise HTTPException(status_code=400, detail="WhatsApp number must contain digits only")
+            existing_phone = db.query(User).filter(
+                User.whatsapp_phone == phone,
+                User.id != current_user.id,
+            ).first()
+            if existing_phone:
+                raise HTTPException(status_code=400, detail="This WhatsApp number is already used")
+            current_user.whatsapp_phone = phone
+        else:
+            current_user.whatsapp_phone = None
     
     if "password" in data and data["password"]:
         # Verify old password

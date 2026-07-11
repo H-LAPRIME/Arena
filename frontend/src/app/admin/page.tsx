@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { claimsApi, usersApi, matchesApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, PlusIcon, TrashIcon, CrownIcon, BallIcon, XIcon } from "@/components/Icons";
+import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, PlusIcon, TrashIcon, CrownIcon, BallIcon, XIcon, CopyIcon, CheckIcon } from "@/components/Icons";
 import Link from "next/link";
 
 export default function AdminPage() {
@@ -35,6 +35,7 @@ export default function AdminPage() {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedLeagueMembers, setSelectedLeagueMembers] = useState<any[]>([]);
   const [expandedSeasonGroups, setExpandedSeasonGroups] = useState<Record<string, boolean>>({});
+  const [copiedLeagueId, setCopiedLeagueId] = useState("");
 
   useEffect(() => {
     if (!isLoading && !isAdmin) router.replace("/dashboard");
@@ -279,6 +280,17 @@ export default function AdminPage() {
 
   function seasonExists(name: string) {
     return seasons.some((s: any) => s.name === name);
+  }
+
+  async function handleCopyLeagueId(leagueId: string) {
+    try {
+      await navigator.clipboard.writeText(leagueId);
+      setCopiedLeagueId(leagueId);
+      setMsg("success:league_id copied.");
+      setTimeout(() => setCopiedLeagueId(""), 2000);
+    } catch {
+      setMsg("error:Could not copy league_id.");
+    }
   }
 
   const msgType = msg.startsWith("success:") ? "success" : "error";
@@ -611,6 +623,16 @@ export default function AdminPage() {
                       <td>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <span className="player-name">{s.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyLeagueId(s.id)}
+                            className="btn btn-sm btn-secondary"
+                            title="Copier l'ID de la ligue"
+                            style={{ fontSize: "11px", padding: "4px 9px", display: "inline-flex", alignItems: "center", gap: "4px", whiteSpace: "nowrap" }}
+                          >
+                            {copiedLeagueId === s.id ? <CheckIcon /> : <CopyIcon />}
+                            {copiedLeagueId === s.id ? "Copied" : "league_id"}
+                          </button>
                           {s.is_auto_created && (
                             <span style={{ fontSize: "11px", background: "rgba(34, 197, 94, 0.1)", color: "#22c55e", padding: "2px 8px", borderRadius: "4px", border: "1px solid rgba(34, 197, 94, 0.3)", fontWeight: 600 }}>
                               <BallIcon /> Auto-started

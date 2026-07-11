@@ -18,6 +18,7 @@ from app.routers import leagues as leagues_router
 from app.routers import admin_leagues as admin_leagues_router
 from app.routers import stats as stats_router
 from app.routers import certificates as certificates_router
+from app.routers import bot as bot_router
 from app.limiter import limiter
 
 # Import all models so SQLAlchemy registers them
@@ -72,6 +73,7 @@ app.include_router(claims_router.router)
 app.include_router(chat_router.router)
 app.include_router(stats_router.router)
 app.include_router(certificates_router.router)
+app.include_router(bot_router.router)
 
 
 @app.exception_handler(Exception)

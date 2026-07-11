@@ -29,6 +29,7 @@ class UserResponse(BaseModel):
     total_trophies: int
     is_lord: bool
     is_active: bool
+    whatsapp_phone: Optional[str] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -41,6 +42,7 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
+    whatsapp_phone: Optional[str] = None
 
 
 class Token(BaseModel):

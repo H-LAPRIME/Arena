@@ -15,6 +15,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     google_id: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
+    whatsapp_phone: Mapped[Optional[str]] = mapped_column(String(20), unique=True, nullable=True)
 
     avatar_url: Mapped[str] = mapped_column(String(500), default="")
     role: Mapped[str] = mapped_column(String(20), default="user")  # "user" | "admin"
