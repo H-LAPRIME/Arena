@@ -18,17 +18,25 @@ from app.database import engine  # noqa: E402
 
 
 def migrate():
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         dialect = engine.dialect.name
         if dialect == "postgresql":
-            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS whatsapp_phone VARCHAR(20)"))
+            result = conn.execute(
+                text(
+                    "SELECT 1 FROM information_schema.columns "
+                    "WHERE table_name = 'users' AND column_name = 'whatsapp_phone'"
+                )
+            )
+            if result.scalar():
+                print("whatsapp_phone column already exists")
+                return
+            conn.execute(text("ALTER TABLE users ADD COLUMN whatsapp_phone VARCHAR(20)"))
             conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_whatsapp_phone ON users (whatsapp_phone)"))
         else:
             columns = conn.execute(text("PRAGMA table_info(users)")).fetchall()
             if not any(column[1] == "whatsapp_phone" for column in columns):
                 conn.execute(text("ALTER TABLE users ADD COLUMN whatsapp_phone VARCHAR(20)"))
             conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_whatsapp_phone ON users (whatsapp_phone)"))
-        conn.commit()
         print("whatsapp_phone migration complete")
 
 
