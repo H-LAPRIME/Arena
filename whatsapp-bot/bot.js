@@ -9,7 +9,9 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
-const qrcode = require("qrcode-terminal");
+const qrcodeTerminal = require("qrcode-terminal");
+const QRCode = require("qrcode");
+const { exec } = require("child_process");
 
 const configPath = path.join(__dirname, "config.json");
 if (!fs.existsSync(configPath)) {
@@ -20,6 +22,7 @@ if (!fs.existsSync(configPath)) {
 const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 const sessions = {};
 const SESSION_TTL_MS = 15 * 60 * 1000;
+const botSentMessageIds = new Set(); // IDs des messages envoyes PAR le bot (pour ne pas les re-traiter)
 
 function log(...args) {
   console.log(new Date().toISOString(), "-", ...args);
@@ -90,8 +93,19 @@ async function main() {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
-      log("Scan this QR code with WhatsApp (Linked devices):");
-      qrcode.generate(qr, { small: true });
+      log("QR recu. Ouverture de l'image qr.png...");
+      const qrPath = path.join(__dirname, "qr.png");
+      QRCode.toFile(qrPath, qr, { width: 500 }, (err) => {
+        if (err) {
+          log("Impossible de generer qr.png, affichage ASCII en secours:", err.message);
+          qrcodeTerminal.generate(qr, { small: true });
+          return;
+        }
+        log(`QR sauvegarde: ${qrPath} — ouverture automatique...`);
+        // Ouvre l'image avec la visionneuse par defaut (Windows/Mac/Linux)
+        const opener = process.platform === "win32" ? "start" : process.platform === "darwin" ? "open" : "xdg-open";
+        exec(`${opener} "${qrPath}"`, { shell: true }, () => {});
+      });
     }
 
     if (connection === "close") {
@@ -106,20 +120,38 @@ async function main() {
   sock.ev.on("messages.upsert", async ({ messages }) => {
     for (const msg of messages) {
       try {
-        if (!msg.message || msg.key.fromMe) continue;
+        if (!msg.message) continue;
+
+        // On ignore uniquement les messages que LE BOT lui-meme a envoyes
+        // (ses propres reponses automatiques), pas ceux tapes a la main
+        // depuis ce meme compte (l'admin peut donc utiliser /matche aussi).
+        if (msg.key.fromMe && botSentMessageIds.has(msg.key.id)) {
+          botSentMessageIds.delete(msg.key.id);
+          continue;
+        }
+
+        log(`DEBUG - message recu, fromMe: ${msg.key.fromMe}, jid: ${msg.key.remoteJid}`);
 
         const jid = msg.key.remoteJid || "";
         if (!jid.endsWith("@g.us")) continue;
 
         const groupMeta = await sock.groupMetadata(jid);
+        log(`DEBUG - groupe "${groupMeta.subject}" (attendu: "${config.groupName}")`);
         if (groupMeta.subject !== config.groupName) continue;
 
         const imageMsg = msg.message.imageMessage;
         const textOnly = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
         const caption = imageMsg ? imageMsg.caption || "" : "";
-        const senderJid = msg.key.participant || msg.key.remoteJid;
-        const phone = senderJid.split("@")[0];
-        const reply = (text) => sock.sendMessage(jid, { text });
+        // Si le message vient de toi-meme (fromMe), on te traite comme l'expediteur
+        // (via ton propre JID), sinon on prend le participant du groupe.
+        const senderJid = msg.key.fromMe
+          ? sock.user.id
+          : (msg.key.participant || msg.key.remoteJid);
+        const phone = senderJid.split("@")[0].split(":")[0];
+        const reply = async (text) => {
+          const sent = await sock.sendMessage(jid, { text });
+          if (sent?.key?.id) botSentMessageIds.add(sent.key.id);
+        };
 
         if (/^\/annuler\b/i.test(textOnly)) {
           resetSession(phone);
@@ -199,7 +231,7 @@ async function main() {
             filename: `claim_${phone}_${Date.now()}.${ext}`,
             mimetype: session.mimetype,
           });
-
+	
           await reply(
             `Claim envoye: MJ${match.match_day} ${match.home_player_name} ${score.home}-${score.away} ${match.away_player_name}\nEn attente d'approbation admin.`
           );
@@ -218,3 +250,4 @@ async function main() {
 }
 
 main();
+
