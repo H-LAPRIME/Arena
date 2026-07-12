@@ -142,12 +142,21 @@ async function main() {
         const imageMsg = msg.message.imageMessage;
         const textOnly = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
         const caption = imageMsg ? imageMsg.caption || "" : "";
-        // Si le message vient de toi-meme (fromMe), on te traite comme l'expediteur
-        // (via ton propre JID), sinon on prend le participant du groupe.
+        // Si le message vient de toi-meme (fromMe), on utilise ton numero
+        // configure dans config.json (plus fiable que sock.user.id, qui
+        // peut renvoyer un LID technique au lieu du vrai numero).
         const senderJid = msg.key.fromMe
-          ? sock.user.id
+          ? null
           : (msg.key.participant || msg.key.remoteJid);
-        const phone = senderJid.split("@")[0].split(":")[0];
+        const phone = msg.key.fromMe
+          ? (config.adminPhone || "").replace(/\D/g, "")
+          : senderJid.split("@")[0].split(":")[0];
+
+        if (msg.key.fromMe && !phone) {
+          log("DEBUG - message de toi-meme mais 'adminPhone' n'est pas defini dans config.json, ignore.");
+          continue;
+        }
+
         const reply = async (text) => {
           const sent = await sock.sendMessage(jid, { text });
           if (sent?.key?.id) botSentMessageIds.add(sent.key.id);
@@ -164,11 +173,14 @@ async function main() {
           try {
             matches = await getPendingMatches(phone);
           } catch (err) {
-            if (err.response?.status === 404) {
+            const detail = err.response?.data?.detail || "";
+            if (err.response?.status === 404 && detail.toLowerCase().includes("lie")) {
               await reply(`Ton numero WhatsApp n'est pas encore lie a ton compte. Va dans ton profil Arena et enregistre ce numero: ${phone}.`);
               continue;
             }
-            throw err;
+            log("DEBUG - erreur API inattendue:", err.response?.status, detail || err.message);
+            await reply(`Erreur API (${err.response?.status || "?"}): ${detail || err.message}. Verifie que le backend est bien deploye.`);
+            continue;
           }
 
           if (matches.length === 0) {
@@ -231,7 +243,7 @@ async function main() {
             filename: `claim_${phone}_${Date.now()}.${ext}`,
             mimetype: session.mimetype,
           });
-	
+
           await reply(
             `Claim envoye: MJ${match.match_day} ${match.home_player_name} ${score.home}-${score.away} ${match.away_player_name}\nEn attente d'approbation admin.`
           );
@@ -250,4 +262,3 @@ async function main() {
 }
 
 main();
-
