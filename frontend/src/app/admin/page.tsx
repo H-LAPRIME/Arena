@@ -465,7 +465,7 @@ export default function AdminPage() {
           <div className="table-container admin-table-container" style={{ flex: 1, overflowY: "auto" }}>
             <table className="admin-table">
               <thead>
-                <tr><th>Player</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+                <tr><th>Player</th><th>Email</th><th>Phone</th><th>Role</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 {filteredUsers.map((u: any) => (
@@ -482,6 +482,7 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.email}</td>
+                    <td style={{ color: "var(--text-secondary)", fontSize: "13px" }}>{u.whatsapp_phone || <span style={{ opacity: 0.3 }}>-</span>}</td>
                     <td><span className={u.role === "admin" ? "badge badge-gold" : "badge"}>{u.role}</span></td>
                     <td>
                       <button onClick={() => { setEditingUser(u); setModalError(""); setIsUserModalOpen(true); }} className="btn btn-sm" style={{ marginRight: "4px" }}>Edit</button>
@@ -725,6 +726,7 @@ export default function AdminPage() {
               )}
               <input placeholder="Username" required value={editingUser?.username || ""} onChange={e => setEditingUser({ ...editingUser, username: e.target.value })} className="input-field" />
               <input type="email" placeholder="Email" required value={editingUser?.email || ""} onChange={e => setEditingUser({ ...editingUser, email: e.target.value })} className="input-field" />
+              <input placeholder="WhatsApp Phone (digits only)" value={editingUser?.whatsapp_phone || ""} onChange={e => setEditingUser({ ...editingUser, whatsapp_phone: e.target.value || null })} className="input-field" />
               <input type="password" placeholder={editingUser?.id ? "Nouveau mot de passe (laisser vide si inchangé)" : "Mot de passe"} required={!editingUser?.id} onChange={e => setEditingUser({ ...editingUser, password: e.target.value })} className="input-field" />
               <select value={editingUser?.role || "user"} onChange={e => setEditingUser({ ...editingUser, role: e.target.value })} className="input-field" style={{ background: "var(--bg-dark)" }}>
                 <option value="user">User</option>

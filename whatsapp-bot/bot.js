@@ -9,6 +9,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
+const qrcode = require("qrcode-terminal");
 
 const configPath = path.join(__dirname, "config.json");
 if (!fs.existsSync(configPath)) {
@@ -81,13 +82,18 @@ async function main() {
   const sock = makeWASocket({
     auth: state,
     logger: P({ level: "silent" }),
-    printQRInTerminal: true,
   });
 
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("connection.update", (update) => {
-    const { connection, lastDisconnect } = update;
+    const { connection, lastDisconnect, qr } = update;
+
+    if (qr) {
+      log("Scan this QR code with WhatsApp (Linked devices):");
+      qrcode.generate(qr, { small: true });
+    }
+
     if (connection === "close") {
       const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
       log("Connection closed.", shouldReconnect ? "Reconnecting..." : "Logged out.");

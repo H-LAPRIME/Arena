@@ -1,6 +1,0 @@
-{
-  "backendUrl": "https://TON-BACKEND-HUGGINGFACE.hf.space",
-  "leagueId": "METS_ICI_TON_LEAGUE_ID",
-  "groupName": "eFootball Arena",
-  "botSecret": "LA_MEME_VALEUR_QUE_BOT_SHARED_SECRET_DANS_LE_.env_DU_BACKEND"
-}

@@ -515,7 +515,22 @@ def update_user(user_id: str, data: UserUpdate, admin: User = Depends(require_ad
         if len(data.password) < 6:
             raise HTTPException(status_code=400, detail="Password too short (min 6 characters)")
         user.password_hash = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-        
+
+    if data.whatsapp_phone is not None:
+        phone = data.whatsapp_phone.strip()
+        if phone:
+            if not phone.isdigit():
+                raise HTTPException(status_code=400, detail="Phone must contain digits only")
+            existing_phone = db.query(User).filter(
+                User.whatsapp_phone == phone,
+                User.id != user_id,
+            ).first()
+            if existing_phone:
+                raise HTTPException(status_code=400, detail="This phone number is already used")
+            user.whatsapp_phone = phone
+        else:
+            user.whatsapp_phone = None
+
     db.commit()
     db.refresh(user)
     return UserResponse.model_validate(user)
