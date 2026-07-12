@@ -16,7 +16,9 @@ class Settings(BaseSettings):
 
     # Mistral AI
     MISTRAL_API_KEY: str = ""
-
+    VAPID_PUBLIC_KEY: str = ""
+    VAPID_PRIVATE_KEY: str = ""
+    VAPID_CLAIMS_EMAIL: str = "admin@example.com"
     # CORS
     CORS_ORIGINS: str = "http://localhost:3000"
 

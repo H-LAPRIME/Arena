@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 import traceback
-
+from app.routers import push as push_router
 from app.config import get_settings
 from app.database import engine, Base
 from app.routers import auth as auth_router
@@ -76,6 +76,7 @@ app.include_router(chat_router.router)
 app.include_router(stats_router.router)
 app.include_router(certificates_router.router)
 app.include_router(bot_router.router)
+app.include_router(push_router.router)
 
 
 @app.exception_handler(Exception)

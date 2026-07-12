@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, PlusIcon, TrashIcon, CrownIcon, BallIcon, XIcon, CopyIcon, CheckIcon } from "@/components/Icons";
 import Link from "next/link";
+import { EnablePushButton } from "@/components/EnablePushButton";
 
 export default function AdminPage() {
   const { isAdmin, isLoading } = useAuth();
@@ -303,6 +304,7 @@ export default function AdminPage() {
       <div className="page-header">
         <h1 className="page-title"><AdminIcon /> Admin Panel</h1>
         <p className="page-subtitle">Full platform management</p>
+        <EnablePushButton />
       </div>
 
       {msg && <div className={`toast ${msgType}`} style={{ position: "relative", bottom: "auto", right: "auto", marginBottom: "20px" }} onClick={() => setMsg("")}>{msgText}</div>}

@@ -46,16 +46,19 @@ function botHeaders() {
 }
 
 async function getPendingMatches(phone) {
-  const response = await axios.get(`${config.backendUrl}/api/bot/matches`, {
+  const url = `${config.backendUrl}/api/bot/matches`;
+  const params = { phone, league_id: config.leagueId || undefined };
+  log(`DEBUG - appel GET ${url} params=${JSON.stringify(params)}`);
+  const response = await axios.get(url, {
     headers: botHeaders(),
-    params: { phone, league_id: config.leagueId || undefined },
+    params,
   });
   return response.data;
 }
 
 function formatMatchList(matches) {
   return matches
-    .map((match, index) => `${index + 1}. MJ${match.match_day}: ${match.home_player_name} (home) vs ${match.away_player_name} (away)`)
+    .map((match, index) => `*${index + 1}.* 🗓️ MJ${match.match_day} — *${match.home_player_name}* 🏠 vs *${match.away_player_name}* ✈️`)
     .join("\n");
 }
 
@@ -142,20 +145,40 @@ async function main() {
         const imageMsg = msg.message.imageMessage;
         const textOnly = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
         const caption = imageMsg ? imageMsg.caption || "" : "";
-        // Si le message vient de toi-meme (fromMe), on te traite comme l'expediteur
-        // (via ton propre JID), sinon on prend le participant du groupe.
+        // Si le message vient de toi-meme (fromMe), on utilise ton numero
+        // configure dans config.json (plus fiable que sock.user.id, qui
+        // peut renvoyer un LID technique au lieu du vrai numero).
         const senderJid = msg.key.fromMe
-          ? sock.user.id
+          ? null
           : (msg.key.participant || msg.key.remoteJid);
-        const phone = senderJid.split("@")[0].split(":")[0];
+        let phone = msg.key.fromMe
+          ? (config.adminPhone || "").replace(/\D/g, "")
+          : senderJid.split("@")[0].split(":")[0];
+
+        // WhatsApp masque parfois le vrai numero derriere un LID (identifiant
+        // technique interne). Si on a une correspondance connue dans
+        // config.json ("lidMap"), on la resout vers le vrai numero.
+        if (config.lidMap && config.lidMap[phone]) {
+          log(`DEBUG - LID ${phone} resolu vers ${config.lidMap[phone]} via lidMap`);
+          phone = config.lidMap[phone];
+        }
+
+        if (msg.key.fromMe && !phone) {
+          log("DEBUG - message de toi-meme mais 'adminPhone' n'est pas defini dans config.json, ignore.");
+          continue;
+        }
+
         const reply = async (text) => {
           const sent = await sock.sendMessage(jid, { text });
           if (sent?.key?.id) botSentMessageIds.add(sent.key.id);
         };
 
-        if (/^\/annuler\b/i.test(textOnly)) {
+        if (/^\/?(annuler|annule|cancel|stop)\b/i.test(textOnly)) {
+          const hadSession = !!getSession(phone);
           resetSession(phone);
-          await reply('Annule. Renvoie ta capture avec "/matche" pour recommencer.');
+          if (hadSession) {
+            await reply('❌ *Annulé.* Renvoie ta capture avec `/matche` en légende pour recommencer.');
+          }
           continue;
         }
 
@@ -164,15 +187,19 @@ async function main() {
           try {
             matches = await getPendingMatches(phone);
           } catch (err) {
-            if (err.response?.status === 404) {
-              await reply(`Ton numero WhatsApp n'est pas encore lie a ton compte. Va dans ton profil Arena et enregistre ce numero: ${phone}.`);
+            const status = err.response?.status;
+            const detail = err.response?.data?.detail || "";
+            log("DEBUG - erreur brute:", status, JSON.stringify(err.response?.data), err.message);
+            if (status === 404 && String(detail).toLowerCase().includes("lie")) {
+              await reply(`⚠️ *Numéro non lié.*\nVa dans ton profil Arena et enregistre ce numéro :\n\`${phone}\``);
               continue;
             }
-            throw err;
+            await reply(`❌ *Erreur API (${status || "?"})*\n${detail || err.message}\n\n_Vérifie backendUrl/leagueId/botSecret dans config.json._`);
+            continue;
           }
 
           if (matches.length === 0) {
-            await reply("Aucun match en attente pour toi.");
+            await reply("✅ Aucun match en attente pour toi pour le moment.");
             continue;
           }
 
@@ -187,7 +214,7 @@ async function main() {
             expiresAt: Date.now() + SESSION_TTL_MS,
           };
 
-          await reply(`Tes matchs en attente:\n${formatMatchList(matches)}\n\nReponds avec le numero du match.`);
+          await reply(`📋 *TES MATCHS EN ATTENTE*\n\n${formatMatchList(matches)}\n\n👉 Réponds avec le *numéro* du match.\n_(ou \`/annuler\` pour arrêter)_`);
           continue;
         }
 
@@ -199,7 +226,7 @@ async function main() {
         if (session.step === "select_match") {
           const index = parseInt(textOnly.trim(), 10);
           if (!index || !session.matches[index - 1]) {
-            await reply(`Numero invalide. Reponds avec un numero entre 1 et ${session.matches.length}.`);
+            await reply(`⚠️ Numéro invalide. Réponds avec un numéro entre *1* et *${session.matches.length}*.`);
             continue;
           }
 
@@ -208,7 +235,7 @@ async function main() {
           session.expiresAt = Date.now() + SESSION_TTL_MS;
 
           await reply(
-            `Match choisi: ${session.selectedMatch.home_player_name} (home) vs ${session.selectedMatch.away_player_name} (away)\nEnvoie le score, ex: "3-1" (gauche = home, droite = away).`
+            `✅ *Match choisi :*\n🏠 *${session.selectedMatch.home_player_name}*  vs  *${session.selectedMatch.away_player_name}* ✈️\n\n✍️ Envoie le score, ex: \`3-1\`\n_(gauche = home, droite = away)_\n_(ou \`/annuler\` pour arrêter)_`
           );
           continue;
         }
@@ -216,7 +243,7 @@ async function main() {
         if (session.step === "enter_score") {
           const score = parseScore(textOnly);
           if (!score) {
-            await reply('Format invalide. Envoie le score comme ceci: "3-1".');
+            await reply('⚠️ Format invalide. Envoie le score comme ceci: `3-1`.');
             continue;
           }
 
@@ -231,9 +258,9 @@ async function main() {
             filename: `claim_${phone}_${Date.now()}.${ext}`,
             mimetype: session.mimetype,
           });
-	
+
           await reply(
-            `Claim envoye: MJ${match.match_day} ${match.home_player_name} ${score.home}-${score.away} ${match.away_player_name}\nEn attente d'approbation admin.`
+            `🎉 *CLAIM ENVOYÉ* 🎉\n\n🗓️ MJ${match.match_day}\n🏠 *${match.home_player_name}*  *${score.home} - ${score.away}*  *${match.away_player_name}* ✈️\n\n⏳ _En attente d'approbation admin._`
           );
           log("Claim created:", claim.id);
           resetSession(phone);
@@ -242,7 +269,7 @@ async function main() {
         const detail = err.response?.data?.detail || err.message;
         log("Message handling error:", detail);
         try {
-          await sock.sendMessage(msg.key.remoteJid, { text: `Erreur: ${detail}` });
+          await sock.sendMessage(msg.key.remoteJid, { text: `❌ *Erreur:* ${detail}` });
         } catch (_) {}
       }
     }
@@ -250,4 +277,3 @@ async function main() {
 }
 
 main();
-

@@ -8,6 +8,7 @@ import os
 import secrets
 import uuid
 from typing import List, Optional
+from app.utils.push import send_push_to_admins
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -178,4 +179,10 @@ async def bot_submit_claim(
     db.add(claim)
     db.commit()
     db.refresh(claim)
+    send_push_to_admins(
+        db,
+        title="Nouveau claim a valider (WhatsApp)",
+        body=f"{user.username} a soumis un resultat via WhatsApp",
+        url="/admin/claims",
+    )
     return _claim_response(claim, user)

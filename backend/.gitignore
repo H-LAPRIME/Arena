@@ -20,3 +20,5 @@ uploads/
 # IDEs
 .idea/
 .vscode/
+
+.venv/

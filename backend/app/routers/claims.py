@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from supabase import create_client, Client
-
+from app.utils.push import send_push_to_admins
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
@@ -129,6 +129,13 @@ async def submit_claim(
     db.add(claim)
     db.commit()
     db.refresh(claim)
+    
+    send_push_to_admins(
+        db,
+        title="Nouveau claim a valider",
+        body=f"{current_user.username} a soumis un resultat",
+        url="/admin/claims",
+    )
     return _build_response(claim, db)
 
 
