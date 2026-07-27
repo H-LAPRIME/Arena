@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { authApi } from "./api";
 
 export interface AuthUser {
   id: string;
@@ -55,18 +56,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const twentyFourHours = 24 * 60 * 60 * 1000;
       
       if (now - parseInt(loginTime) > twentyFourHours) {
-        // Session expired
         logout();
       } else {
         try {
           setToken(savedToken);
           setUser(JSON.parse(savedUser));
+          // Refresh user data from server in case fields like is_lord changed
+          authApi.me()
+            .then((fresh) => {
+              if (fresh) {
+                localStorage.setItem("efootball_user", JSON.stringify(fresh));
+                setUser(fresh);
+              }
+            })
+            .catch(() => {});
         } catch {
           logout();
         }
       }
     } else if (savedToken || savedUser || loginTime) {
-      // Inconsistent state, logout to be safe
       logout();
     }
     setIsLoading(false);
