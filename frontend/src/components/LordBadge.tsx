@@ -1,12 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useId } from "react";
 
-function DiamondIcon() {
+function DiamondIcon({ gradId }: { gradId: string }) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path d="M6 3h12l4 6-10 12L2 9z" fill="url(#lordGrad)" stroke="#7dd3fc" strokeWidth="0.5" />
+      <path d="M6 3h12l4 6-10 12L2 9z" fill={`url(#${gradId})`} stroke="#7dd3fc" strokeWidth="0.5" />
       <defs>
-        <linearGradient id="lordGrad" x1="0" y1="0" x2="24" y2="24">
+        <linearGradient id={gradId} x1="0" y1="0" x2="24" y2="24">
           <stop offset="0%" stopColor="#bae6fd" />
           <stop offset="50%" stopColor="#38bdf8" />
           <stop offset="100%" stopColor="#0284c7" />
@@ -18,6 +18,7 @@ function DiamondIcon() {
 
 export function LordBadge({ lordCount }: { lordCount: number }) {
   const [hover, setHover] = useState(false);
+  const gradId = useId();
   if (!lordCount || lordCount < 1) return null;
 
   return (
@@ -26,7 +27,7 @@ export function LordBadge({ lordCount }: { lordCount: number }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <DiamondIcon />
+      <DiamondIcon gradId={gradId} />
       {hover && (
         <span
           style={{
