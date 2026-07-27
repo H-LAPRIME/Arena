@@ -1248,3 +1248,33 @@ select option {
   font-weight: 700;
 }
 .btn-gold:hover { opacity: 0.9; }
+.trailer-section {
+  padding: 48px 0 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.trailer-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.trailer-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  display: block;
+  pointer-events: none; /* empêche le clic d'ouvrir les contrôles natifs */
+}
+
+@media (max-width: 640px) {
+  .trailer-video {
+    border-radius: 12px;
+  }
+}

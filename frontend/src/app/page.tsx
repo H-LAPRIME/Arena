@@ -51,22 +51,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trailer */}
-      <section className="trailer-section">
-        <div className="page-container">
-          <video
-            className="trailer-video"
-            src="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/Trailler.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            controls
-            poster="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/icon.png"
-          />
-        </div>
-      </section>
-
+{/* Trailer */}
+<section className="trailer-section">
+  <div className="trailer-wrapper">
+    <video
+      className="trailer-video"
+      src="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/Trailler.mp4"
+      autoPlay
+      loop
+      muted
+      playsInline
+      disablePictureInPicture
+      disableRemotePlayback
+      poster="https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/icon.png"
+    />
+  </div>
+</section>
       <div className="page-container">
         {/* Quick Stats */}
         <div className="stat-grid" style={{ marginBottom: "32px" }}>
