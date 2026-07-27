@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "eFootball Arena — AI-Powered Challenge Platform",
   description: "Challenge your friends in eFootball. Submit results with proof, climb the rankings, become the Lord.",
   icons: {
-    icon: "/favicon.png",
+    icon: "https://lengolmmiwmrmlmzswek.supabase.co/storage/v1/object/public/avatars/icon.png",
   },
 };
 
