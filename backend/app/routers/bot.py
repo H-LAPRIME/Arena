@@ -16,6 +16,8 @@ from supabase import Client, create_client
 
 from app.config import get_settings
 from app.database import get_db
+from app.models.league import League
+from app.models.league_member import LeagueMember
 from app.models.match import Match
 from app.models.result_claim import ResultClaim
 from app.models.user import User
@@ -103,21 +105,39 @@ async def _store_screenshot(screenshot: UploadFile, user_id: str, match_id: str)
 @router.get("/matches", response_model=List[MatchResponse])
 def bot_get_pending_matches(
     phone: str,
-    league_id: Optional[str] = None,
+    league_id: Optional[str] = None,  # conserve pour compat, mais ignore desormais
     db: Session = Depends(get_db),
     _: None = Depends(verify_bot_secret),
 ):
+    """
+    Matchs en attente (non joues) du joueur associe a ce numero WhatsApp,
+    dans SA LIGUE ACTIVE ACTUELLE (auto-detectee, pas configuree en dur).
+    """
     user = _get_user_by_phone(phone, db)
 
-    query = db.query(Match).filter(
+    # Trouve la (les) league(s) actives dont ce joueur est membre
+    active_league = (
+        db.query(League)
+        .join(LeagueMember, LeagueMember.league_id == League.id)
+        .filter(LeagueMember.user_id == user.id, League.status == "active")
+        .order_by(League.started_at.desc().nullslast(), League.created_at.desc())
+        .first()
+    )
+
+    if not active_league:
+        raise HTTPException(
+            status_code=404,
+            detail="Aucune ligue active trouvee pour ce joueur. La saison n'a peut-etre pas encore demarre.",
+        )
+
+    q = db.query(Match).filter(
         (Match.home_player_id == user.id) | (Match.away_player_id == user.id),
+        Match.league_id == active_league.id,
         Match.status != "played",
     )
-    if league_id:
-        query = query.filter(Match.league_id == league_id)
 
-    matches = query.order_by(Match.match_day).all()
-    return [_match_response(match, db) for match in matches]
+    matches = q.order_by(Match.match_day).all()
+    return [_match_response(m, db) for m in matches]
 
 
 @router.post("/claims", response_model=ClaimResponse)

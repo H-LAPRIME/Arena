@@ -47,7 +47,7 @@ function botHeaders() {
 
 async function getPendingMatches(phone) {
   const url = `${config.backendUrl}/api/bot/matches`;
-  const params = { phone, league_id: config.leagueId || undefined };
+  const params = { phone }; // league_id retire : le backend auto-detecte la ligue active du joueur
   log(`DEBUG - appel GET ${url} params=${JSON.stringify(params)}`);
   const response = await axios.get(url, {
     headers: botHeaders(),
@@ -194,7 +194,11 @@ async function main() {
               await reply(`⚠️ *Numéro non lié.*\nVa dans ton profil Arena et enregistre ce numéro :\n\`${phone}\``);
               continue;
             }
-            await reply(`❌ *Erreur API (${status || "?"})*\n${detail || err.message}\n\n_Vérifie backendUrl/leagueId/botSecret dans config.json._`);
+            if (status === 404 && String(detail).toLowerCase().includes("active")) {
+              await reply(`⏳ *Aucune ligue active pour toi actuellement.*\nLa saison n'a peut-être pas encore démarré.`);
+              continue;
+            }
+            await reply(`❌ *Erreur API (${status || "?"})*\n${detail || err.message}\n\n_Vérifie backendUrl/botSecret dans config.json._`);
             continue;
           }
 
