@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(JSON.parse(savedUser));
           // Refresh user data from server in case fields like is_lord changed
           authApi.me()
-            .then((fresh) => {
-              if (fresh) {
+            .then((fresh: any) => {
+              if (fresh && fresh.id) {
                 localStorage.setItem("efootball_user", JSON.stringify(fresh));
                 setUser(fresh);
               }

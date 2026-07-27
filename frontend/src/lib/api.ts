@@ -66,7 +66,7 @@ export const authApi = {
     apiFetch(`/api/auth/check-signup-email?email=${encodeURIComponent(email)}`),
   googleLogin: (token: string) =>
     apiFetch("/api/auth/google", { method: "POST", body: JSON.stringify({ token }) }),
-  me: () => apiFetch("/api/auth/me"),
+  me: () => apiFetch("/api/auth/me", { method: "POST" }),
 };
 
 
