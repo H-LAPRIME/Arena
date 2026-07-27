@@ -1,4 +1,5 @@
 import logging
+import re
 
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
@@ -47,7 +48,7 @@ def ensure_whatsapp_phone_column(engine: Engine) -> None:
 
 
 def ensure_lord_count_column(engine: Engine) -> None:
-    """Add lord_count column to users and backfill for existing Lords."""
+    """Add lord_count column to users and backfill Lord status from title data."""
     dialect = engine.dialect.name
     logger.info("Running startup migration: ensure lord_count column (dialect=%s)", dialect)
 
@@ -67,19 +68,8 @@ def ensure_lord_count_column(engine: Engine) -> None:
                 )
                 logger.info("lord_count column added successfully")
 
-            # Backfill: set lord_count for existing Lord users
-            conn.execute(
-                text(
-                    "UPDATE users SET lord_count = GREATEST(sub.title_count - 2, 1) "
-                    "FROM ("
-                    "  SELECT titles.user_id, COUNT(*) AS title_count "
-                    "  FROM titles "
-                    "  WHERE titles.title_type = 'champion' "
-                    "  GROUP BY titles.user_id"
-                    ") AS sub "
-                    "WHERE users.id = sub.user_id AND users.is_lord = true AND users.lord_count = 0"
-                )
-            )
+            # Fix is_lord + lord_count for users with 3+ titles in any series
+            _backfill_lord_from_titles_pg(conn)
             logger.info("lord_count backfill complete")
 
         elif dialect == "sqlite":
@@ -90,22 +80,90 @@ def ensure_lord_count_column(engine: Engine) -> None:
             else:
                 logger.info("lord_count column already exists")
 
-            # SQLite backfill: count champion titles for each Lord user
-            rows = conn.execute(
-                text("SELECT id FROM users WHERE is_lord = 1 AND lord_count = 0")
-            ).fetchall()
-            for (user_id,) in rows:
-                result = conn.execute(
-                    text(
-                        "SELECT COUNT(*) FROM titles "
-                        "WHERE user_id = :uid AND title_type = 'champion'"
-                    ),
+            _backfill_lord_from_titles_sqlite(conn)
+            logger.info("lord_count backfill complete")
+
+
+def _backfill_lord_from_titles_pg(conn) -> None:
+    """Detect Lords from champion titles and set is_lord + lord_count."""
+    # Get all users who have champion titles but are not marked as Lord
+    rows = conn.execute(
+        text(
+            "SELECT DISTINCT u.id, u.is_lord "
+            "FROM users u "
+            "JOIN titles t ON t.user_id = u.id "
+            "WHERE t.title_type = 'champion'"
+        )
+    ).fetchall()
+
+    for (user_id, is_lord) in rows:
+        # Get all league names this user won
+        title_rows = conn.execute(
+            text(
+                "SELECT l.name FROM titles t "
+                "JOIN leagues l ON l.id = t.league_id "
+                "WHERE t.user_id = :uid AND t.title_type = 'champion'"
+            ),
+            {"uid": user_id},
+        ).fetchall()
+
+        titles_in_series = _count_titles_per_series([r[0] for r in title_rows])
+        max_series_count = max(titles_in_series.values()) if titles_in_series else 0
+
+        if max_series_count >= 3:
+            if not is_lord:
+                conn.execute(
+                    text("UPDATE users SET is_lord = true WHERE id = :uid"),
                     {"uid": user_id},
                 )
-                title_count = result.scalar() or 0
-                lord_count = max(title_count - 2, 1)
+                logger.info("Fixed is_lord for user %s", user_id)
+            conn.execute(
+                text("UPDATE users SET lord_count = :lc WHERE id = :uid"),
+                {"lc": max_series_count - 2, "uid": user_id},
+            )
+
+
+def _backfill_lord_from_titles_sqlite(conn) -> None:
+    """Detect Lords from champion titles and set is_lord + lord_count (SQLite)."""
+    rows = conn.execute(
+        text(
+            "SELECT DISTINCT u.id, u.is_lord "
+            "FROM users u "
+            "JOIN titles t ON t.user_id = u.id "
+            "WHERE t.title_type = 'champion'"
+        )
+    ).fetchall()
+
+    for (user_id, is_lord) in rows:
+        title_rows = conn.execute(
+            text(
+                "SELECT l.name FROM titles t "
+                "JOIN leagues l ON l.id = t.league_id "
+                "WHERE t.user_id = :uid AND t.title_type = 'champion'"
+            ),
+            {"uid": user_id},
+        ).fetchall()
+
+        titles_in_series = _count_titles_per_series([r[0] for r in title_rows])
+        max_series_count = max(titles_in_series.values()) if titles_in_series else 0
+
+        if max_series_count >= 3:
+            if not is_lord:
                 conn.execute(
-                    text("UPDATE users SET lord_count = :lc WHERE id = :uid"),
-                    {"lc": lord_count, "uid": user_id},
+                    text("UPDATE users SET is_lord = 1 WHERE id = :uid"),
+                    {"uid": user_id},
                 )
-            logger.info("lord_count backfill complete")
+                logger.info("Fixed is_lord for user %s", user_id)
+            conn.execute(
+                text("UPDATE users SET lord_count = :lc WHERE id = :uid"),
+                {"lc": max_series_count - 2, "uid": user_id},
+            )
+
+
+def _count_titles_per_series(league_names: list) -> dict:
+    """Count how many titles per league series (base name)."""
+    series = {}
+    for name in league_names:
+        base = re.sub(r" V\d+$", "", name).strip()
+        series[base] = series.get(base, 0) + 1
+    return series

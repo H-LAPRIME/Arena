@@ -118,6 +118,9 @@ async def _complete_league(db: Session, league: League, winner_standing: Standin
         )
         db.add(notif)
         
+        # Flush so count_series_titles sees the champion_id we just set
+        db.flush()
+        
         titles_in_league = count_series_titles(db, winner.id, league.name)
         
         if titles_in_league >= 3:
