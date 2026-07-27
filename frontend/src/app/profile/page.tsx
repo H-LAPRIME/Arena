@@ -26,6 +26,7 @@ export default function ProfilePage() {
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [lordStatus, setLordStatus] = useState<any>(null);
+  const [expandedLordSeries, setExpandedLordSeries] = useState<string | null>(null);
   
   // Crop states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -265,42 +266,105 @@ export default function ProfilePage() {
         <div style={{ gridColumn: "span 2", display: "flex", flexDirection: "column", gap: "32px" }}>
           <h2 className="section-title"><TrophyIcon /> Hall of Fame</h2>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-            {/* Lord Certificate Card */}
+          <div style={{ display: "grid", gridTemplateColumns: user.is_lord ? "1fr" : "1fr 1fr", gap: "24px" }}>
+            {/* Lord Certificate Card — shows each lord series */}
             {user.is_lord ? (
-              <div className="card certificate-card gold" style={{ background: "rgba(212, 175, 55, 0.05)", border: "1px solid var(--gold)" }}>
-                <div className="card-bg-watermark"><TrophyIcon /></div>
-                <div style={{ padding: "24px" }}>
-                  <div style={{ color: "var(--gold)", marginBottom: "16px", display: "flex" }}><CrownIcon /></div>
-                  <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "8px" }}>Lord of the Arena</h3>
-                  <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "20px" }}>You have achieved legendary status with 3+ titles!</p>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => certificatesApi.downloadLord()} className="btn btn-gold" style={{ flex: 1 }}>Download PDF</button>
-                    <button
-                      onClick={async () => {
-                        if (!lordStatus) {
+              <>
+                <div className="card" style={{ border: "1px solid var(--gold)", background: "rgba(212, 175, 55, 0.03)" }}>
+                  <div className="card-bg-watermark"><TrophyIcon /></div>
+                  <div style={{ padding: "24px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                      <div style={{ color: "var(--gold)", display: "flex" }}><CrownIcon /></div>
+                      <div>
+                        <h3 style={{ fontSize: "20px", fontWeight: 800 }}>LORD OF THE GAME</h3>
+                        <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Click a series to view its certificate</p>
+                      </div>
+                    </div>
+
+                    {lordStatus?.lord_leagues?.map((ll: any) => (
+                      <div key={ll.series_name} style={{ marginBottom: "12px" }}>
+                        <button
+                          onClick={async () => {
+                            if (!lordStatus) {
+                              const status = await usersApi.getLordStatus(user.id);
+                              setLordStatus(status);
+                            }
+                            setExpandedLordSeries(expandedLordSeries === ll.series_name ? null : ll.series_name);
+                          }}
+                          className="btn"
+                          style={{
+                            width: "100%", textAlign: "left", padding: "14px 18px",
+                            background: expandedLordSeries === ll.series_name ? "rgba(255, 215, 0, 0.1)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${expandedLordSeries === ll.series_name ? "var(--gold)" : "var(--border)"}`,
+                            borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center",
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: "15px", color: "var(--gold)" }}>{ll.series_name}</div>
+                            <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>{ll.titles} titles won</div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ background: "rgba(255,215,0,0.15)", padding: "4px 12px", borderRadius: "8px", border: "1px solid rgba(255,215,0,0.3)" }}>
+                              <span style={{ fontWeight: 800, color: "var(--gold)" }}>{ll.titles}</span>
+                              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>/3</span>
+                            </div>
+                            <span style={{ fontSize: "18px", color: "var(--text-muted)", transform: expandedLordSeries === ll.series_name ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>&#x25BC;</span>
+                          </div>
+                        </button>
+
+                        {expandedLordSeries === ll.series_name && (
+                          <div style={{ marginTop: "12px", paddingLeft: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                            {ll.leagues?.map((lg: any) => (
+                              <div key={lg.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(255,255,255,0.03)", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                                <div>
+                                  <div style={{ fontWeight: 600, fontSize: "13px" }}>{lg.name}</div>
+                                  {lg.ended_at && <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>Won {new Date(lg.ended_at).toLocaleDateString()}</div>}
+                                </div>
+                                <div style={{ display: "flex", gap: "6px" }}>
+                                  <button onClick={() => certificatesApi.downloadTitle(lg.id, lg.name)} className="btn btn-sm btn-gold" style={{ fontSize: "11px" }}>Badge</button>
+                                </div>
+                              </div>
+                            ))}
+                            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                              <button onClick={() => certificatesApi.downloadLord()} className="btn btn-gold" style={{ flex: 1 }}>Download PDF</button>
+                              <button
+                                onClick={() => setShowCertificate(!showCertificate)}
+                                className="btn btn-secondary"
+                                style={{ flex: 1 }}
+                              >
+                                {showCertificate ? "Hide Certificate" : "View Certificate"}
+                              </button>
+                            </div>
+                            {showCertificate && (
+                              <div style={{ marginTop: "16px" }}>
+                                <LordCertificate
+                                  username={user.username}
+                                  titleCount={ll.titles}
+                                  achievedAt={ll.leagues?.[ll.leagues.length - 1]?.ended_at || new Date().toISOString()}
+                                  leagueName={ll.series_name}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {(!lordStatus || !lordStatus.lord_leagues?.length) && (
+                      <button
+                        onClick={async () => {
                           const status = await usersApi.getLordStatus(user.id);
                           setLordStatus(status);
-                        }
-                        setShowCertificate(!showCertificate);
-                      }}
-                      className="btn btn-secondary"
-                      style={{ flex: 1 }}
-                    >
-                      {showCertificate ? "Hide Certificate" : "View Certificate"}
-                    </button>
+                        }}
+                        className="btn btn-gold"
+                        style={{ width: "100%" }}
+                      >
+                        Load Lord Details
+                      </button>
+                    )}
                   </div>
-                  {showCertificate && lordStatus && (
-                    <div style={{ marginTop: "20px" }}>
-                      <LordCertificate
-                        username={user.username}
-                        titleCount={lordStatus.total_titles}
-                        achievedAt={lordStatus.titles[lordStatus.titles.length - 1]?.awarded_at || new Date().toISOString()}
-                      />
-                    </div>
-                  )}
                 </div>
-              </div>
+              </>
             ) : (
               <div className="card" style={{ padding: "24px", textAlign: "center", border: "1px dashed var(--border)" }}>
                 <div className="card-bg-watermark"><TrophyIcon /></div>

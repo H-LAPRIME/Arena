@@ -169,15 +169,26 @@ def get_lord_status(user_id: str, current_user: User = Depends(get_current_user)
     lord_leagues = []
     if user.is_lord:
         all_leagues = db.query(League).all()
-        seen = set()
+        series_map: dict[str, list] = {}
         for league in all_leagues:
             base_name = re.sub(r" V\d+$", "", league.name).strip()
-            if base_name in seen:
-                continue
-            count = count_series_titles(db, user_id, league.name)
-            if count >= 3:
-                lord_leagues.append({"series_name": base_name, "titles": count})
-            seen.add(base_name)
+            if league.champion_id == user_id:
+                series_map.setdefault(base_name, []).append(league)
+
+        for base_name, leagues in series_map.items():
+            if len(leagues) >= 3:
+                lord_leagues.append({
+                    "series_name": base_name,
+                    "titles": len(leagues),
+                    "leagues": [
+                        {
+                            "id": l.id,
+                            "name": l.name,
+                            "ended_at": str(l.ended_at) if l.ended_at else None,
+                        }
+                        for l in sorted(leagues, key=lambda x: x.ended_at or x.created_at)
+                    ],
+                })
 
     return {
         "is_lord": user.is_lord,
