@@ -7,6 +7,9 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 export const metadata: Metadata = {
   title: "eFootball Arena — AI-Powered Challenge Platform",
   description: "Challenge your friends in eFootball. Submit results with proof, climb the rankings, become the Lord.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
