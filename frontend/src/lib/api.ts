@@ -100,6 +100,7 @@ export const usersApi = {
     form.append("file", file);
     return apiFetch("/api/users/me/avatar", { method: "POST", body: form });
   },
+  getLordStatus: (id: string) => apiFetch(`/api/users/${id}/lord-status`),
 };
 
 // Leagues

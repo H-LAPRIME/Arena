@@ -409,6 +409,7 @@ def get_standings(
         data = StandingResponse.model_validate(s)
         data.username = user.username if user else "?"
         data.avatar_url = user.avatar_url if user else ""
+        data.lord_count = user.lord_count if user else 0
         data.form = form
         result.append(data)
     return result

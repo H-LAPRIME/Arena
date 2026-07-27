@@ -8,6 +8,7 @@ class StandingResponse(BaseModel):
     user_id: str
     username: str = ""
     avatar_url: str = ""
+    lord_count: int = 0
     points: int
     played: int
     wins: int

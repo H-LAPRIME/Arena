@@ -4,6 +4,7 @@ import { usersApi, statsApi, getAvatarUrl, certificatesApi } from "@/lib/api";
 import { useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { UsersIcon, TrophyIcon, GamepadIcon, ZapIcon, HomeIcon, PlaneIcon, DownloadIcon, BallIcon, MedalIcon } from "@/components/Icons";
+import { LordBadge } from "@/components/LordBadge";
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -49,7 +50,7 @@ export default function PlayerDetailPage() {
         {/* Left Side: Name and Badges */}
         <div style={{ flex: 1, textAlign: "left", position: "relative", zIndex: 1 }}>
           <h1 className="page-title" style={{ fontSize: "42px", marginBottom: "8px", lineHeight: "1.1", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>{player.username}</h1>
-          {player.is_lord && <div className="lord-badge" style={{ display: "inline-flex", marginBottom: "16px", fontSize: "14px" }}><TrophyIcon /> LORD OF THE GAME</div>}
+          {player.is_lord && <div className="lord-badge" style={{ display: "inline-flex", marginBottom: "16px", fontSize: "14px" }}><TrophyIcon /> LORD OF THE GAME <LordBadge lordCount={player.lord_count} /></div>}
           <div style={{ display: "flex", justifyContent: "flex-start", gap: "8px", marginTop: "12px", flexWrap: "wrap", alignItems: "center" }}>
             {(player.badges || []).map((b: any) => (
               <span key={b.id} className="badge" style={{ padding: "6px 12px", fontSize: "13px" }}><MedalIcon /> {b.badge_name}</span>

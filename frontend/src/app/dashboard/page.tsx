@@ -5,6 +5,7 @@ import { usersApi, leaguesApi, matchesApi, getAvatarUrl } from "@/lib/api";
 import { GridIcon, ZapIcon, GamepadIcon, TrophyIcon, UsersIcon, PlusIcon, HomeIcon, PlaneIcon, CrownIcon, CheckIcon, CalendarIcon, XIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 import { useAuth } from "@/lib/auth";
+import { LordBadge } from "@/components/LordBadge";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -585,7 +586,7 @@ export default function DashboardPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <span style={{ fontWeight: 600, fontSize: "14px" }}>{m.username}</span>
-                        {m.is_lord && <span title="Lord of the Game" style={{ color: "var(--gold)", display: "flex" }}><CrownIcon /></span>}
+                        <LordBadge lordCount={m.lord_count} />
                       </div>
                       <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>Joined {new Date(m.joined_at).toLocaleDateString()}</div>
                     </div>
@@ -703,7 +704,7 @@ export default function DashboardPage() {
                           <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "4px" }}>{p.username}</div>
                           <div style={{ fontSize: "11px", color: "var(--text-muted)", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
                             <TrophyIcon /> {p.total_trophies || 0}
-                            {p.is_lord && <span title="Lord" style={{ color: "var(--gold)", display: "flex", marginLeft: "4px" }}><CrownIcon /></span>}
+                            <LordBadge lordCount={p.lord_count} />
                           </div>
                         </div>
                       </a>

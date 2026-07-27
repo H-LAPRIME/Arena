@@ -4,6 +4,7 @@ import { statsApi, usersApi, leaguesApi } from "@/lib/api";
 import { ChartIcon, ZapIcon, TrophyIcon, SwordIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 import LeagueSelector from "@/components/LeagueSelector";
+import { LordBadge } from "@/components/LordBadge";
 
 export default function StatsPage() {
   const [records, setRecords] = useState<any>(null);
@@ -138,7 +139,7 @@ export default function StatsPage() {
                     <td style={{ color: "var(--green)", fontWeight: 700 }}>{p.total_wins}</td>
                     <td>{p.total_goals}</td>
                     <td><span className="badge badge-gold"><TrophyIcon /> {p.titles}</span></td>
-                    <td>{p.is_lord ? <span className="lord-badge" style={{ fontSize: "10px", padding: "4px 12px" }}><TrophyIcon /> LORD</span> : "—"}</td>
+                    <td>{p.is_lord ? <span className="lord-badge" style={{ fontSize: "10px", padding: "4px 12px" }}><TrophyIcon /> LORD <LordBadge lordCount={p.lord_count} /></span> : "—"}</td>
                   </tr>
                 ))}
               </tbody>

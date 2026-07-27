@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { ChartIcon, TrophyIcon, ArrowRightIcon } from "@/components/Icons";
 import { BotIntervention } from "@/components/BotIntervention";
 import LeagueSelector from "@/components/LeagueSelector";
+import { LordBadge } from "@/components/LordBadge";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -112,6 +113,7 @@ export default function ScoreboardPage() {
                               </div>
                               <a href={`/players/${s.user_id}`} style={{ textDecoration: "none", color: "inherit" }}>
                                 <span className="player-name">{s.username}</span>
+                                <LordBadge lordCount={s.lord_count} />
                               </a>
                             </div>
                           </td>

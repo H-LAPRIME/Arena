@@ -120,24 +120,27 @@ async def _complete_league(db: Session, league: League, winner_standing: Standin
         
         titles_in_league = count_series_titles(db, winner.id, league.name)
         
-        if titles_in_league >= 3 and not winner.is_lord:
-            winner.is_lord = True
-            db.add(Title(
-                id=str(uuid.uuid4()),
-                user_id=winner.id,
-                league_id=league.id,
-                title_type="lord",
-            ))
-            # Special notification for Lord status
-            lord_notif = Notification(
-                id=str(uuid.uuid4()),
-                user_id=winner.id,
-                title="LORD OF THE ARENA",
-                message="Incredible! With 3 trophies to your name, you are now crowned LORD OF THE ARENA.",
-                notif_type="lord",
-                notif_data=json.dumps({"league_id": league.id, "league_name": league.name, "champion_id": winner.id}),
-            )
-            db.add(lord_notif)
+        if titles_in_league >= 3:
+            winner.lord_count = titles_in_league - 2
+            
+            if not winner.is_lord:
+                winner.is_lord = True
+                db.add(Title(
+                    id=str(uuid.uuid4()),
+                    user_id=winner.id,
+                    league_id=league.id,
+                    title_type="lord",
+                ))
+                # Special notification for Lord status
+                lord_notif = Notification(
+                    id=str(uuid.uuid4()),
+                    user_id=winner.id,
+                    title="LORD OF THE ARENA",
+                    message="Incredible! With 3 trophies to your name, you are now crowned LORD OF THE ARENA.",
+                    notif_type="lord",
+                    notif_data=json.dumps({"league_id": league.id, "league_name": league.name, "champion_id": winner.id}),
+                )
+                db.add(lord_notif)
 
     # Notify all other members
     members = db.query(LeagueMember).filter(LeagueMember.league_id == league.id).all()

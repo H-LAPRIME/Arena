@@ -9,6 +9,7 @@ export interface AuthUser {
   avatar_url: string;
   role: "user" | "admin";
   total_titles: number;
+  lord_count: number;
   is_lord: boolean;
   is_active: boolean;
   whatsapp_phone?: string | null;

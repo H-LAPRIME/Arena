@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
     avatar_url: str
     role: str
     total_trophies: int
+    lord_count: int = 0
     is_lord: bool
     is_active: bool
     whatsapp_phone: Optional[str] = None

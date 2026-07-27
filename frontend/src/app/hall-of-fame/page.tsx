@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { CrownIcon, MedalIcon, ScrollIcon, TrophyIcon } from "@/components/Icons";
+import { LordBadge } from "@/components/LordBadge";
 
 export default function HallOfFamePage() {
   const [players, setPlayers] = useState<any[]>([]);
@@ -40,7 +41,7 @@ export default function HallOfFamePage() {
             background: "var(--gradient-gold)", boxShadow: "var(--shadow-gold)" }}>
             {lord.username[0].toUpperCase()}
           </div>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "32px", marginBottom: "8px" }}>{lord.username}</h2>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "32px", marginBottom: "8px" }}>{lord.username} <LordBadge lordCount={lord.lord_count} /></h2>
           <p style={{ color: "var(--gold-dark)", fontWeight: 600 }}>{lord.total_titles} titres de champion</p>
         </div>
       ) : (
@@ -83,7 +84,7 @@ export default function HallOfFamePage() {
                   p.username[0].toUpperCase()
                 )}
               </div>
-              <h3 style={{ fontWeight: 700, marginBottom: "4px" }}>{p.username}</h3>
+              <h3 style={{ fontWeight: 700, marginBottom: "4px" }}>{p.username} <LordBadge lordCount={p.lord_count} /></h3>
               <div style={{ fontFamily: "var(--font-display)", fontSize: "24px", fontWeight: 900, color: "var(--gold-dark)" }}>
                 {p.total_titles}
               </div>

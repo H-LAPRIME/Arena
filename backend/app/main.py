@@ -20,7 +20,7 @@ from app.routers import stats as stats_router
 from app.routers import certificates as certificates_router
 from app.routers import bot as bot_router
 from app.limiter import limiter
-from app.startup_migrations import ensure_whatsapp_phone_column
+from app.startup_migrations import ensure_whatsapp_phone_column, ensure_lord_count_column
 
 # Import all models so SQLAlchemy registers them
 from app.models import *  # noqa
@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     Base.metadata.create_all(bind=engine)
     ensure_whatsapp_phone_column(engine)
+    ensure_lord_count_column(engine)
     yield
 
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { usersApi, leaguesApi, getAvatarUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { CrownIcon, TrashIcon, TrophyIcon, UsersIcon } from "@/components/Icons";
+import { LordBadge } from "@/components/LordBadge";
 
 export default function PlayersPage() {
   const [leaguesWithMembers, setLeaguesWithMembers] = useState<any[]>([]);
@@ -134,6 +135,7 @@ export default function PlayersPage() {
                       </div>
                       <h3 style={{ fontFamily: "var(--font-display)", fontSize: "18px", marginBottom: "8px" }}>
                         {p.username}
+                        <LordBadge lordCount={p.lord_count} />
                       </h3>
                       {p.is_lord && <div className="lord-badge" style={{ marginBottom: "12px", fontSize: "10px" }}><TrophyIcon /> LORD</div>}
                       <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>

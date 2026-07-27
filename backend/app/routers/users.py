@@ -1,4 +1,5 @@
 from typing import List, Optional
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -145,6 +146,54 @@ def get_user(user_id: str, current_user: User = Depends(get_current_user), db: S
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return UserResponse.model_validate(user)
+
+
+@router.get("/{user_id}/lord-status")
+def get_lord_status(user_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from app.models.title import Title
+    from app.models.league import League
+    from app.services.league_lifecycle import count_series_titles
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    champion_titles = (
+        db.query(Title)
+        .filter(Title.user_id == user_id, Title.title_type == "champion")
+        .order_by(Title.awarded_at)
+        .all()
+    )
+
+    # Find which league series this user is Lord of
+    lord_leagues = []
+    if user.is_lord:
+        all_leagues = db.query(League).all()
+        seen = set()
+        for league in all_leagues:
+            base_name = re.sub(r" V\d+$", "", league.name).strip()
+            if base_name in seen:
+                continue
+            count = count_series_titles(db, user_id, league.name)
+            if count >= 3:
+                lord_leagues.append({"series_name": base_name, "titles": count})
+            seen.add(base_name)
+
+    return {
+        "is_lord": user.is_lord,
+        "lord_count": user.lord_count,
+        "total_titles": len(champion_titles),
+        "titles": [
+            {
+                "id": t.id,
+                "league_id": t.league_id,
+                "title_type": t.title_type,
+                "awarded_at": str(t.awarded_at),
+            }
+            for t in champion_titles
+        ],
+        "lord_leagues": lord_leagues,
+    }
 
 
 @router.get("/me/notifications", response_model=List[NotificationResponse])

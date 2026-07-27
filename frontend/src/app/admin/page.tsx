@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AdminIcon, ShieldIcon, UsersIcon, GamepadIcon, CalendarIcon, TrophyIcon, PlusIcon, TrashIcon, CrownIcon, BallIcon, XIcon, CopyIcon, CheckIcon } from "@/components/Icons";
 import Link from "next/link";
 import { EnablePushButton } from "@/components/EnablePushButton";
+import { LordBadge } from "@/components/LordBadge";
 
 export default function AdminPage() {
   const { isAdmin, isLoading } = useAuth();
@@ -845,7 +846,7 @@ export default function AdminPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <span style={{ fontWeight: 600 }}>{m.username}</span>
-                      {m.is_lord && <span title="Lord of the Game" style={{ color: "gold", display: "flex" }}><CrownIcon /></span>}
+                      <LordBadge lordCount={m.lord_count} />
                     </div>
                     <div style={{ fontSize: "12px", color: "var(--text-muted)" }}> Joined on {new Date(m.joined_at).toLocaleDateString()}</div>
                   </div>

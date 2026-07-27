@@ -5,6 +5,8 @@ import { statsApi, usersApi, leaguesApi, certificatesApi } from "@/lib/api";
 import Link from "next/link";
 import { BallIcon, ChartIcon, CrownIcon, TrophyIcon, ShieldIcon, GamepadIcon, SettingsIcon, UsersIcon } from "@/components/Icons";
 import Cropper from "react-easy-crop";
+import { LordBadge } from "@/components/LordBadge";
+import { LordCertificate } from "@/components/LordCertificate";
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
@@ -22,6 +24,8 @@ export default function ProfilePage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [lordStatus, setLordStatus] = useState<any>(null);
   
   // Crop states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -172,7 +176,7 @@ export default function ProfilePage() {
             <input id="avatar-input" type="file" accept="image/*" hidden onChange={handleFileSelect} />
           </div>
 
-          <h1 style={{ fontSize: "32px", fontWeight: 900, marginBottom: "8px", letterSpacing: "-1px" }}>{user.username}</h1>
+          <h1 style={{ fontSize: "32px", fontWeight: 900, marginBottom: "8px", letterSpacing: "-1px" }}>{user.username} <LordBadge lordCount={user.lord_count} /></h1>
           <p style={{ color: "var(--text-muted)", fontSize: "16px", marginBottom: "24px" }}>{user.email}</p>
           
           <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
@@ -270,7 +274,31 @@ export default function ProfilePage() {
                   <div style={{ color: "var(--gold)", marginBottom: "16px", display: "flex" }}><CrownIcon /></div>
                   <h3 style={{ fontSize: "20px", fontWeight: 800, marginBottom: "8px" }}>Lord of the Arena</h3>
                   <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "20px" }}>You have achieved legendary status with 3+ titles!</p>
-                  <button onClick={() => certificatesApi.downloadLord()} className="btn btn-gold" style={{ width: "100%" }}>Download Certificate</button>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button onClick={() => certificatesApi.downloadLord()} className="btn btn-gold" style={{ flex: 1 }}>Download PDF</button>
+                    <button
+                      onClick={async () => {
+                        if (!lordStatus) {
+                          const status = await usersApi.getLordStatus(user.id);
+                          setLordStatus(status);
+                        }
+                        setShowCertificate(!showCertificate);
+                      }}
+                      className="btn btn-secondary"
+                      style={{ flex: 1 }}
+                    >
+                      {showCertificate ? "Hide Certificate" : "View Certificate"}
+                    </button>
+                  </div>
+                  {showCertificate && lordStatus && (
+                    <div style={{ marginTop: "20px" }}>
+                      <LordCertificate
+                        username={user.username}
+                        titleCount={lordStatus.total_titles}
+                        achievedAt={lordStatus.titles[lordStatus.titles.length - 1]?.awarded_at || new Date().toISOString()}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

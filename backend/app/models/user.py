@@ -20,6 +20,7 @@ class User(Base):
     avatar_url: Mapped[str] = mapped_column(String(500), default="")
     role: Mapped[str] = mapped_column(String(20), default="user")  # "user" | "admin"
     total_trophies: Mapped[int] = mapped_column(Integer, default=0)
+    lord_count: Mapped[int] = mapped_column(Integer, default=0)
     is_lord: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
